@@ -1,18 +1,26 @@
 %% partracking3D
 
 if strcmp(getenv('COMPUTERNAME'),'DESKTOP-3ONLTD9')
-    cd('C:\Users\Lenovo\Jottacloud\RECHERCHE\Projets\21_IFPEN\manips\Nouveau dossier')
+    cd('C:\Users\Lenovo\Jottacloud\RECHERCHE\Projets\21_IFPEN\git\partracking3D')
 else
     cd('C:\Users\darcy\Desktop\git\Robust-Estimation')
 end
-cd('C:\Users\darcy\Desktop\git\Robust-Estimation')
+
 load('all_IFPEN_DARCY02_experiments.mat')
 
 % ho to load calib file in the structure
 % allExpeStrct(7).calib = load('D:\IFPEN\analysisExperiments\calibFiles\calib_2021_08_13\calib.mat');
 
+
+
 iexpe = 8; 
 
+if strcmp(getenv('COMPUTERNAME'),'DESKTOP-3ONLTD9')
+    if iexpe == 8
+        allExpeStrct(iexpe).inputFolder = 'C:\Users\Lenovo\Jottacloud\RECHERCHE\Projets\21_IFPEN\manips\expe_2021_08_15_40percent';
+        allExpeStrct(iexpe).analysisFolder = 'C:\Users\Lenovo\Jottacloud\RECHERCHE\Projets\21_IFPEN\analysis\analysis_2021_08_15';
+    end
+end
 %% find Centers 
 allresults = struct();
 cd(allExpeStrct(iexpe).analysisFolder)
