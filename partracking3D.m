@@ -26,8 +26,8 @@ allresults = struct();
 cd(allExpeStrct(iexpe).analysisFolder)
 file_log_ID = fopen(sprintf('log_%s.txt',allExpeStrct(iexpe).name), 'a');
  
-planeI = 031;
-planeF = 033;
+planeI = 001;
+planeF = 004;
 
 cIN = clock;
 allTraj = struct();
@@ -63,7 +63,7 @@ cOUT = clock;
 
 %% visualise alltraj
 % choose time
-iplane = 61; % scan
+iplane = 1; % scan
 
 figure('defaultAxesFontSize',20)
 imagesc(allTraj(iplane).ImMax )
