@@ -7,6 +7,7 @@ ifile = 1;
 
 dofigures = 'no';
 
+iexpe = 2;
 inputFolder = allExpeStrct(iexpe).inputFolder;
 
 cd(inputFolder)

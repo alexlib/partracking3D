@@ -1,97 +1,51 @@
-%% partracking3D
+%% Workflow_mcin2_at_PSMN
+%
+% things to solve: long min of trajectories and itStep
+% 
+close all
+clear all
 
-if strcmp(getenv('COMPUTERNAME'),'DESKTOP-3ONLTD9')
-    cd('C:\Users\Lenovo\Jottacloud\RECHERCHE\Projets\21_IFPEN\git\partracking3D')
-else
-    cd('C:\Users\darcy\Desktop\git\Robust-Estimation')
-end
-
+cd('C:\Users\darcy\Desktop\git\Robust-Estimation')
 load('all_IFPEN_DARCY02_experiments.mat')
 
-% ho to load calib file in the structure
-% allExpeStrct(7).calib = load('D:\IFPEN\analysisExperiments\calibFiles\calib_2021_08_13\calib.mat');
 
-iexpe = 8; 
+%iexpe = 2:
+% folderScriptshell = 'C:\Users\darcy\Desktop\git\Robust-Estimation\';
+% folderExperiment = 'D:\IFPEN\analysisExperiments\analysis_expe_2021_06_17\run02\';
+% nameAllTraj = 'alltraj_20210617_run02';
+% 
+%  iexpe = 6;
+%  folderScriptshell = allExpeStrct(iexpe).analysisFolder;
+%  folderExperiment  = folderScriptshell;
+%  nameAllTraj = 'alltraj_20210617_run02.mat';
+%NOTE FLOR: this one works pretty well but there's an isolated 
+%point that it's outside the lightsheet
 
-if strcmp(getenv('COMPUTERNAME'),'DESKTOP-3ONLTD9')
-    if iexpe == 8
-        allExpeStrct(iexpe).inputFolder = 'C:\Users\Lenovo\Jottacloud\RECHERCHE\Projets\21_IFPEN\manips\expe_2021_08_15_40percent';
-        allExpeStrct(iexpe).analysisFolder = 'C:\Users\Lenovo\Jottacloud\RECHERCHE\Projets\21_IFPEN\analysis\analysis_2021_08_15';
-    end
-end
-%% find Centers 
-allresults = struct();
-cd(allExpeStrct(iexpe).analysisFolder)
-file_log_ID = fopen(sprintf('log_%s.txt',allExpeStrct(iexpe).name), 'a');
- 
-planeI = 13;
-planeF = 13;
+% iexpe = 7;
+% folderScriptshell = allExpeStrct(iexpe).analysisFolder;
+% folderExperiment  = folderScriptshell;
+% nameAllTraj = 'alltraj_2021_08_13_electroVavle_at_20percent.mat';
 
-cIN = clock;
-allTraj = struct();
+iexpe = 8;
+folderScriptshell = allExpeStrct(iexpe).analysisFolder;
+folderExperiment  = folderScriptshell;
+nameAllTraj = 'alltraj_2021_08_15_electroVavle_at_40percent.mat';
+% 
+% iexpe = 2;
+% folderScriptshell = allExpeStrct(iexpe).analysisFolder;
+% folderExperiment = folderScriptshell;
+% nameAllTraj = 'alltraj_2021_05_05.mat';
 
-for iplane = planeI : planeF
-    
-    fprintf('plane: %3.0d / %3.0d \n',iplane,planeF)
-    iSeqa = iplane*2-1;
-    iSeqb = iplane*2;
-    
-    cPlane_i = clock;
-    c1i = clock; fprintf('starts looking for trajectories at %0.2dh%0.2dm\n',c1i(4),c1i(5))
-    
-    maxdist = allExpeStrct(iexpe).maxdist;
-    longmin = allExpeStrct(iexpe).longmin;
-    for iSeq = iSeqa:iSeqb % loop on images sequences
-        fprintf('working on sequence: %4.0f \n',iSeq)
-        clear trajArray_loc tracks_loc CCout
-        [CCall,CCout,ImMean,ImMax,filename] = ...,
-            DARCY02_findCC(allExpeStrct,iexpe,iSeq,maxdist,longmin,'figures','no');
-        %allTraj(iSeq).trajArray = trajArray_loc;
-        %allTraj(iSeq).tracks    = tracks_loc;
-        allTraj(iSeq).CCall    = CCall;
-        allTraj(iSeq).CC       = CCout;
-        allTraj(iSeq).ImMean   = ImMean;
-        allTraj(iSeq).ImMax    = ImMax;
-        allTraj(iSeq).filename = filename;
-    end
-    
-    
-end
-cOUT = clock;
 
-%% visualise alltraj
-% choose time
-iplane = planeI*2; % scan
-
-figure('defaultAxesFontSize',20)
-imagesc(allTraj(iplane).ImMax )
-colormap gray
-clear X Y 
-X = allTraj(iplane).CCall(:,1);
-Y = allTraj(iplane).CCall(:,2);
-hold on
-plot(X,Y,'.b')
-%set(gca,'ydir','reverse')
-hold on
-
-%% save allTraj
-cd(allExpeStrct(iexpe).analysisFolder)
-%nameMat = 'alltraj_2021_08_15_electroVavle_at_40percent.mat';
-nameAllTraj = 'alltraj_2021_05_05.mat';
-save(nameAllTraj,'allTraj','-v7.3')
-% %%
-% planeI = 13;    
-% planeF = 13;
+planeI = 31;    
+planeF = 35;
 %% matching and crossing the rays
-folderExperiment = allExpeStrct(iexpe).analysisFolder;
-folderScriptshell = folderExperiment;
 allresults = PSMN_DARCY02(folderScriptshell,folderExperiment,nameAllTraj,iexpe,planeI,planeF);
 
 %% Display results
 
 % all tracks
-iplane = planeI*2;
-
+iplane = 18;
 
 for itrck = 1 : length(allresults(iplane).trajArray_CAM1)
     sizeTRCK1(itrck) = length(allresults(iplane).trajArray_CAM1(itrck).track(:,1));
@@ -150,41 +104,13 @@ plot(Xr,Yr,'-r','lineWidth',4)
 
 % identify paired tracks and non-paired tracks
 
-%%
-calib = allExpeStrct(iexpe).calib;
-
-CalibFileCam1 = calib(:,1);
-CalibFileCam2 = calib(:,2);
-Ttype= 'T3';
-
-clear x3D y3D z3D
-for ixy = 1 : length(x01)
-    x_pxC1 = x01(ixy);
-    y_pxC1 = y01(ixy);
-    x_pxC2 = x02(ixy);
-    y_pxC2 = y02(ixy);
-    
-    [crossP,D] = crossRays(CalibFileCam1,CalibFileCam2,x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype);
-    if length(crossP)>0
-        x3D(ixy) = crossP(1);
-        y3D(ixy) = crossP(2);
-        z3D(ixy) = crossP(3);
-        D(ixy)   = D;
-        
-        
-    end
-end
-%%
-figure('defaultAxesFontSize',20), box on
-plot3(x3D,y3D,z3D)
-
 
 %% matched tracks
 figure, hold on, box on, view(3)
 xlabel('x')
 ylabel('y')
 zlabel('z')
-iplane = 13;
+for iplane = 34%planeI : planeF
  for itrck = 1 : length(allresults(iplane).someTrajectories)
     clear X Y
     X = allresults(iplane).someTrajectories(itrck).x3D;
@@ -192,8 +118,56 @@ iplane = 13;
     Z = allresults(iplane).someTrajectories(itrck).z3D;
     plot3(X,Y,Z,'lineWidth',4)
  end
+end
 
-%% 
+
+%% FLOR
+
+%% see crossRaysonFire with calibration files
+iexpe=8;
+calib = allExpeStrct(iexpe).calib;
+
+CalibFileCam1 = calib(:,1);
+CalibFileCam2 = calib(:,2);
+Ttype= 'T1';
+
+x01 = struct();
+y01 = struct();
+r3D = struct();
+for i = 1:length(CalibFileCam1)    
+    xy01(i).x = CalibFileCam1(i).pos3D(:,1);
+    xy01(i).y = CalibFileCam1(i).pos3D(:,2);
+    xy02(i).x = CalibFileCam2(i).pos3D(:,1);
+    xy02(i).y = CalibFileCam2(i).pos3D(:,2);
+end
+
+colorTime = jet(length(CalibFileCam1));
+clear x3D y3D z3D
+figure('defaultAxesFontSize',20), box on
+xlabel('x')
+ylabel('y')
+zlabel('z')
+hold on
+for ipoints = 1:length(CalibFileCam1)
+    clear x3D y3D z3D
+for ixy = 1 : length(xy01(ipoints).x)
+    x_pxC1 = xy01(ipoints).x(ixy);
+    y_pxC1 = xy01(ipoints).y(ixy);
+    x_pxC2 = xy02(ipoints).x(ixy);
+    y_pxC2 = xy02(ipoints).y(ixy);
+
+    [crossP,D] = crossRaysonFire(CalibFileCam1,CalibFileCam2,x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype);
+    if length(crossP)>0
+        r3D(ipoints).x(ixy) = crossP(1);
+        r3D(ipoints).y(ixy) = crossP(2);
+        r3D(ipoints).z(ixy) = crossP(3);
+        D(ixy)   = D;
+    end    
+end
+    %plot3(x3D,y3D,z3D,'Color',colorTime(ipoints))
+    plot3(r3D(ipoints).x,r3D(ipoints).y,r3D(ipoints).z)
+end
+
 
 %% matched tracks
 % test by Flor. Will filter out the tracks that fall 
@@ -203,12 +177,18 @@ figure, hold on, box on, view(3)
 xlabel('x')
 ylabel('y')
 zlabel('z')
-iplane = 33;
+iplane = 31;
 
  for itrck = 1 : length(allresults(iplane).someTrajectories)
-     min = mean(allresults(iplane).hist3D)-std(allresults(iplane).hist3D)
-     max = mean(allresults(iplane).hist3D)+std(allresults(iplane).hist3D)
-    if mean(allresults(iplane).someTrajectories(itrck).z3D) > min && mean(allresults(iplane).someTrajectories(itrck).z3D) < max
+     minz = mean(allresults(iplane).hist3D)-2.335*std(allresults(iplane).hist3D);
+     maxz = mean(allresults(iplane).hist3D)+2.335*std(allresults(iplane).hist3D);
+     minx = mean(allresults(iplane).histx)-2.335*std(allresults(iplane).histx);
+     maxx = mean(allresults(iplane).histx)+2.335*std(allresults(iplane).histx);
+     miny = mean(allresults(iplane).histy)-2.335*std(allresults(iplane).histy);
+     maxy = mean(allresults(iplane).histy)+2.335*std(allresults(iplane).histy);
+    if mean(allresults(iplane).someTrajectories(itrck).z3D) > minz && mean(allresults(iplane).someTrajectories(itrck).z3D) < maxz ...
+            && mean(allresults(iplane).someTrajectories(itrck).y3D) > miny && mean(allresults(iplane).someTrajectories(itrck).y3D) < maxy ...
+            && mean(allresults(iplane).someTrajectories(itrck).x3D) > minx && mean(allresults(iplane).someTrajectories(itrck).x3D) < maxx
         clear X Y
         X = allresults(iplane).someTrajectories(itrck).x3D;
         Y = allresults(iplane).someTrajectories(itrck).y3D;
@@ -217,172 +197,6 @@ iplane = 33;
     end
  end
 
-
-%% DARCY02_findTracks - function part
-
-function [CCall,CCout,ImMean,ImMax,filename] = DARCY02_findCC(allExpeStrct,iexpe,ifile,maxdist,longmin,varargin)
-
-% 1. load image
-% 2. subtract mean of the image sequence
-% 3. find particles positions on all images
-
-dofigures = 'no';
-if numel(varargin)
-    dofigures = 'no';
-    if strcmp(varargin{2},'yes')
-        dofigures = varargin{2};
-    end
-end
-
-
-inputFolder = allExpeStrct(iexpe).inputFolder;
-
-cd(inputFolder)
-listMcin2 = dir('*.mcin2');
-filename  = listMcin2(ifile).name;
-
-cd(inputFolder)
-[~,~,params] = mCINREAD2(filename,1,1);
-totalnFrames = params.total_nframes;
-
-cd(inputFolder)
-[M,~,params]=mCINREAD2(filename,1,totalnFrames);
-
-% calculate mean image
-ImMean = uint8(mean(M,3));
-ImMax = max(M,[],3);
-% subtract
-Im01 = M - ImMean;
-
-%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%
-% determine particules positions at pixel precision - then refine at
-% subpixel precision
-th = allExpeStrct(iexpe).centerFinding_th;
-sz = allExpeStrct(iexpe).centerFinding_sz;
-Nwidth = 1;
-CCRAW = struct();
-
-switch dofigures
-    case 'yes'
-        hmax = figure('defaultAxesFontSize',20);
-        imshow(imadjust(ImMax,[1 15]/255))
-        colorTime = jet(size(M,3));
-end
-
-for it = 1 : size(M,3)
-    Im = zeros(size(Im01,1),size(Im01,2),class(Im01));
-    Im(:,:) = Im01(:,:,it);
-    
-    CCRAW(it).xyRAW = pkfnd(Im01(:,:,it),th,sz);
-    
-    %     figure
-    %     imagesc(Im01(:,:,it))
-    %     hold on
-    %     CCooo = CCRAW(it).xyRAW;
-    %     plot(CCooo(:,1),CCooo(:,2),'or')
-    %     pause(.5)
-    %     close all
-    
-    
-    %refine at subpixel precision
-    for ixy = 1 : size(CCRAW(it).xyRAW,1)
-        clear xpkfnd ypkfnd Ip
-        Ip = zeros(2*Nwidth+1,2*Nwidth+1,'double');
-        
-        xpkfnd = CCRAW(it).xyRAW(ixy,1);
-        ypkfnd = CCRAW(it).xyRAW(ixy,2);
-        Ip = double(Im(ypkfnd-Nwidth:ypkfnd+Nwidth,xpkfnd-Nwidth:xpkfnd+Nwidth));
-        % replace all 0 Ip values by a tiny value
-        list0 = find(Ip==0);
-        Ip(list0) = 1e-6;
-        
-        CC(it).xy(ixy,1) = xpkfnd + 0.5*log(Ip(2,3)/Ip(2,1))/(log((Ip(2,2)*Ip(2,2))/(Ip(2,1)*Ip(2,3))));
-        CC(it).xy(ixy,2) = ypkfnd + 0.5*log(Ip(3,2)/Ip(1,2))/(log((Ip(2,2)*Ip(2,2))/(Ip(1,2)*Ip(3,2))));
-    end
-    switch dofigures
-        case 'yes'
-    if size(CCRAW(it).xyRAW,1) >0
-        CCwrk = CC(it).xy;
-        figure(hmax), title(sprintf('time: %4.0f - nparts: %4.0f',it,length(CCwrk)))
-        hold on
-        hp = plot(CCwrk(:,1),CCwrk(:,2),'o','markerFaceColor',colorTime(it,:),...
-            'markerEdgeColor','none','markerSize',5);
-    end
-    end
-end
-%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%
-
-
-
-%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%
-% remove the NaNs for all t
-if exist('CC')
-    for it = 1 : size(CC,2)
-        
-        if size(CCRAW(it).xyRAW,1) >0
-            clear ikill CCX CCY
-            ikill = [];
-            for ip = 1 : size(CC(it).xy,1)
-                CCX(ip) = CC(it).xy(ip,1);
-                CCY(ip) = CC(it).xy(ip,2);
-                if isnan(CC(it).xy(ip,1)) || isnan(CC(it).xy(ip,2))
-                    ikill = [ikill,ip];
-                end
-            end
-            CCX(ikill) = [];
-            CCY(ikill) = [];
-            CC(it).xy = [];
-            for ip = 1 : length(CCX)
-                CC(it).xy(ip,1) = CCX(ip);
-                CC(it).xy(ip,2) = CCY(ip);
-            end
-            
-            % fprintf('ifile: %4.0f - it: %4.0f - n part found: %4.0f n_found_RAW: %4.0f \n',...
-            %     ifile,it,length(CCX),size(CC(it).xy,1))
-        end
-        
-        
-    end
-end
-%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%
-
-
-%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%
-% put all positions in only one variable called CCall
-% also in CCout, an output of the function for later calculations
-clear CCall CCout
-if exist('CC')
-for it = 1 : size(M,3)
-    %fprintf('ifile is %4.0f and it is: %4.0f\n',ifile,it)
-    if  ((length(CC) >= it)) && size(CC(it).xy,1) > 0
-        X = CC(it).xy(:,1);
-        Y = CC(it).xy(:,2);
-        CCout(it).X = X;
-        CCout(it).Y = Y;
-        T = it * ones(1,length(X));
-        %if it == 1
-        if ~exist('CCall')
-            CCall = [X,Y];
-            CCall(:,3) = [T];
-        else
-            CCtemp = [X,Y];
-            CCtemp(:,3) = [T];
-            CCall = [CCall;CCtemp];
-        end
-    end
-end
-else
-    CCall = NaN;
-    CCout = NaN;
-end
-end
-
-%%
 
 %% PSMN_DARCY02
 function allresults = PSMN_DARCY02(folderScriptshell,folderExperiment,nameAllTraj,iexpe,planeI,planeF)
@@ -430,7 +244,7 @@ for iplane = planeI : planeF
     totalnFrames = size(CC1,2);
     
     
-fprintf('plane %0.3d - normxcorr2 \n', iplane  );
+fprintf('plane %0.3d - 2 \n', iplane  );
 ci = clock;
     %  normxcorr2 - we build the images
     ACC1 = zeros(him,wim,'uint8');
@@ -618,7 +432,7 @@ ci = clock;
     %%%%% %%%%% %%%%% %%%%% %%%%%
     % cross rays with trajectories found with DARCY02_matchingTracks
     someTrajectories = struct();
-    Ttype = 'T1';
+    Ttype = 'T1';%T1
     
     % CHECK WITH FLOR:
     %     CalibFile = allExpeStrct(iexpe).CalibFile;
@@ -634,8 +448,7 @@ ci = clock;
         itraj2 = listMatchedTracks(iselTraj).trajcam1;
 
         someTrajectories(iselTraj).itraj1 = itraj1;
-        someTrajectories(iselTraj).itraj2 = itraj2;
-        
+        someTrajectories(iselTraj).itraj2 = itraj2;      
         % cross the two choosen rays
         clear x01 y01 x02 y02 x02incam01 y02incam01
         tminCAM01 = min(trajArray_CAM1(itraj1).track(:,3));
@@ -659,7 +472,7 @@ ci = clock;
                 x_pxC2 = x02(ixy);
                 y_pxC2 = y02(ixy);
                 
-                [crossP,D] = crossRays(CalibFileCam1,CalibFileCam2,x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype);
+                [crossP,D] = crossRaysonFire(CalibFileCam1,CalibFileCam2,x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype);
                 if length(crossP)>0
                     someTrajectories(iselTraj).x3D(ixy) = crossP(1);
                     someTrajectories(iselTraj).y3D(ixy) = crossP(2);
@@ -678,9 +491,13 @@ ci = clock;
     %%%%%%%%%
     hist3D = [];
     histD  = [];
+    histy = [];
+    histx  = [];
     % plot the result
     for itraj3D = 1 : size(someTrajectories,2)
         hist3D = [hist3D,[someTrajectories(itraj3D).z3D]]; % histogram z of particles
+        histx = [histx,[someTrajectories(itraj3D).x3D]];
+        histy = [histy,[someTrajectories(itraj3D).y3D]];
         histD  = [histD, [someTrajectories(itraj3D).D]];   % histogram distance between the rays
     end
     cf = clock;
@@ -693,6 +510,8 @@ ci = clock;
     allresults(iplane).someTrajectories = someTrajectories;
     allresults(iplane).hist3D = hist3D;
     allresults(iplane).histD = histD;
+    allresults(iplane).histy = histy;
+    allresults(iplane).histx = histx;
     allresults(iplane).trajArray_CAM1 = trajArray_CAM1;
     allresults(iplane).trajArray_CAM2RAW = trajArray_CAM2RAW;
     allresults(iplane).listMatchedTracks = listMatchedTracks;
@@ -714,7 +533,6 @@ fprintf('end \n')
 % fclose(file_log_ID)
 
 end
-
 %% FUNCTIONS
 
 %% Darcy02stitching
@@ -1189,8 +1007,8 @@ end
 
 end
 
-%% crossRays
-function [crossP,D] = crossRays(CalibFileCam1,CalibFileCam2,x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype)
+%% crossRaysonFire
+function [crossP,D] = crossRaysonFire(CalibFileCam1,CalibFileCam2,x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype)
 D = 'nan';
 
 % [P1,V1]=findRaysDarcy02(CalibFileCam1,x_pxC1,y_pxC1,Ttype);
@@ -1246,7 +1064,7 @@ XYZ = zeros(numel(calib),3,numel(x_px));
 
 for kplan = 1:Nplans
     I = inpolygon(x_px,y_px,calib(kplan).pimg(calib(kplan).cHull,1),calib(kplan).pimg(calib(kplan).cHull,2));
-    if max(I)>0
+    if max(I)>0 
         if Ttype=='T1'
             [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T1px2rw),x_px(I==1),y_px(I==1));
         elseif Ttype=='T3'
@@ -1540,3 +1358,4 @@ end
 yoffSet = ypeak-size(ACC1sub,1) + w;
 xoffSet = xpeak-size(ACC1sub,2) + w;
 end
+
