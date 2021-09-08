@@ -216,6 +216,34 @@ iplane = 33;
     end
  end
 
+%% showing all the planes
+
+%% matched tracks
+
+colorsL = jet(length(allresults));
+
+figure, hold on, box on, view(3)
+xlabel('x')
+ylabel('y')
+zlabel('z')
+for  iplane = 1 : 1 : length(allresults)
+    clear X Y Z
+    for itrck = 1 : length(allresults(iplane).someTrajectories)
+        d(itrck) = length(allresults(iplane).someTrajectories(itrck).x3D);
+    end
+    X = false(max(d),length(allresults(iplane).someTrajectories));
+    X = NaN * X;
+    Y = false(max(d),length(allresults(iplane).someTrajectories));
+    Y = NaN * Y;
+    Z = false(max(d),length(allresults(iplane).someTrajectories));
+    Z = NaN * Z;
+    for itrck = 1 : length(allresults(iplane).someTrajectories)
+        X(1:d(itrck),itrck) = allresults(iplane).someTrajectories(itrck).x3D;
+        Y(1:d(itrck),itrck) = allresults(iplane).someTrajectories(itrck).y3D;
+        Z(1:d(itrck),itrck) = allresults(iplane).someTrajectories(itrck).z3D;
+        plot3(X,Y,Z,'lineWidth',4,'color',colorsL(iplane,:))
+    end
+end
 
 %% DARCY02_findTracks - function part
 
