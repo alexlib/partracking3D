@@ -192,7 +192,6 @@ iplane = 13;
     Z = allresults(iplane).someTrajectories(itrck).z3D;
     plot3(X,Y,Z,'lineWidth',4)
  end
-
 %% 
 
 %% matched tracks
