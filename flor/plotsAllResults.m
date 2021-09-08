@@ -7,8 +7,8 @@ folderExperiment  = folderScriptshell;
 nameAllTraj = 'alltraj_2021_08_15_electroVavle_at_40percent.mat';
 
 cd(folderExperiment)
-nameResults = 'allResults_auFilDeLEau.m'
-allresults = load(nameResults)
+nameResults = 'allResults_auFilDeLEau.mat';
+load(nameResults)
 
 planeI = 1;    
 planeF = length(allresults);
