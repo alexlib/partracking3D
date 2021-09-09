@@ -1,5 +1,10 @@
 %% partracking3D
 
+% two problems
+% 1/ points de la mires mal croisés en 3D. (crossrays.m ??)
+% 2/ tform1 weird with xz
+% 3/ is matching of the trajectories OK?
+
 if strcmp(getenv('COMPUTERNAME'),'DESKTOP-3ONLTD9')
     cd('C:\Users\Lenovo\Jottacloud\RECHERCHE\Projets\21_IFPEN\git\partracking3D')
 else
