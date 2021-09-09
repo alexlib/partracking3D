@@ -28,13 +28,11 @@ z = oneTraj(trck).z3D; %mm
 
 
 figure; hold on
-plot3(x,y,z,'.-')
 plot3(medfilt1(x),medfilt1(y),medfilt1(z),'.-')
-legend('raw','filtered')
+plot3(medfilt1(x),medfilt1(y),medfilt1(z),'.-')
 xlabel('x')
 ylabel('y')
 zlabel('z')
-title('trajectory')
 
 %% 
 for t = 1:(length(x)-1)

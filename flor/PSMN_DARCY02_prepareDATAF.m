@@ -5,16 +5,15 @@ load('all_IFPEN_DARCY02_experiments.mat')
 
 % ho to load calib file in the structure
 % allExpeStrct(7).calib = load('D:\IFPEN\analysisExperiments\calibFiles\calib_2021_08_13\calib.mat');
-
-iexpe = 8; 
+iexpe = 9; 
 
 %% find Centers 
 allresults = struct();
 cd(allExpeStrct(iexpe).analysisFolder)
 file_log_ID = fopen(sprintf('log_%s.txt',allExpeStrct(iexpe).name), 'a');
  
-planeI = 031;
-planeF = 035;
+planeI = 001;
+planeF = 060;
 
 cIN = clock;
 allTraj = struct();

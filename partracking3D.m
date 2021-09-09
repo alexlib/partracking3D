@@ -131,6 +131,9 @@ for itrck = 1 : length(allresults(iplane).trajArray_CAM1)
    dloc(itrck) = min(sqrt((X-xblue).^2+(Y-yblue).^2));
 end
 [~,it1] = min(dloc);
+Xb = allresults(iplane).trajArray_CAM1(it1).track(:,1);
+Yb = allresults(iplane).trajArray_CAM1(it1).track(:,2);
+
 xblue = 1991;
 yblue =  681;
 clear dloc
@@ -979,7 +982,7 @@ trajArray_CAM1_sttchd = trajArray_CAM1;
 
 end
 
-%%
+%% TAN_track2d
 function [traj,tracks]=TAN_track2d(pos,maxdist,longmin)
 
 % nearest neighbor particle tracking algo
