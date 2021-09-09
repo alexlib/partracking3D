@@ -59,6 +59,54 @@ for iplane = planeI : planeF
 end
 cOUT = clock;
 
+%%
+%% FLOR%% see crossRaysonFire with calibration files
+iexpe=2;
+calib = allExpeStrct(iexpe).calib;
+
+CalibFileCam1 = calib(:,1);
+CalibFileCam2 = calib(:,2);
+Ttype= 'T1';
+
+x01 = struct();
+y01 = struct();
+r3D = struct();
+for i = 1:length(CalibFileCam1)   
+    for ipos3D = 1 : length( CalibFileCam1(i).pos3D  )
+        % finish the work here
+        xy01(i).x = CalibFileCam1(i).pimg(ipos3D,1);
+        xy01(i).y = CalibFileCam1(i).pimg(ipos3D,2);
+        xy02(i).x = CalibFileCam2(i).pimg(ipos3D,1);
+        xy02(i).y = CalibFileCam2(i).pimg(ipos3D,2);
+    end
+end
+
+colorTime = jet(length(CalibFileCam1));
+clear r3D D x3D y3D z3D x_pxC1 y_pxC1 x_pxC2 y_pxC2
+figure, hold on, box on
+for ipoints = 1:length(CalibFileCam1)
+    clear x3D y3D z3D
+    for ixy = 1 : length(xy01(ipoints).x)
+        x_pxC1 = xy01(ipoints).x(ixy);
+        y_pxC1 = xy01(ipoints).y(ixy);
+        x_pxC2 = xy02(ipoints).x(ixy);
+        y_pxC2 = xy02(ipoints).y(ixy);
+        
+        [crossP,D] = crossRaysonFire(CalibFileCam1,CalibFileCam2,x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype);
+        if length(crossP)>0
+            r3D(ipoints).x(ixy) = crossP(1);
+            r3D(ipoints).y(ixy) = crossP(2);
+            r3D(ipoints).z(ixy) = crossP(3);
+            D(ixy)   = D;
+        end
+    end
+    %plot3(x3D,y3D,z3D,'Color',colorTime(ipoints))
+    plot3(r3D(ipoints).x,r3D(ipoints).y,r3D(ipoints).z,'o')
+end
+xlabel('x')
+ylabel('y')
+zlabel('z')
+
 %% visualise alltraj
 % choose time
 iplane = planeI*2; % scan

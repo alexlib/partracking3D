@@ -108,8 +108,16 @@ clear fixedPoints movingPoints
 corOK = ([tmpl_IM_tStr.correlable] == 1);
 fixedPoints  = [[tmpl_IM_tStr(corOK).x]',      [tmpl_IM_tStr(corOK).y]'];
 movingPoints = [[tmpl_IM_tStr(corOK).xoffSet]',[tmpl_IM_tStr(corOK).yoffSet]']; 
-transformationType = 'affine';
+transformationType = 'affine'; % 'nonreflectivesimilarity' OR 'similarity'
 tform1 = fitgeotrans(movingPoints,fixedPoints,transformationType);
+
+
+%% check tform1 is OK
+figure,
+imagesc(ACC1)
+figure,
+imagesc(ACC2)
+%%
 
 % from BLP TRAJECTOIRE 2D
 clear part_cam1 part_cam2 part_cam2RAW
@@ -465,7 +473,7 @@ tmaxCAM01 = max(trajArray_CAM1(itrajCam0).track(:,3));
 tmean = round(     length(trajArray_CAM1(itrajCam0).track(:,3))/2     );
 xcam0 = trajArray_CAM1(itrajCam0).track(tmean,1);
 ycam0 = trajArray_CAM1(itrajCam0).track(tmean,2);
-[xcam1,ycam1] = transformPointsInverse(tform1,xcam0,ycam0);
+[xcam1,ycam1] = transformPointsInverse(1,xcam0,ycam0);
 
 
 % build the list of potential matching trajectory

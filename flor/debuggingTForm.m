@@ -32,6 +32,11 @@ xPoint = 1.93945;
 yPoint = 9.45962;
 zPoint = 23.073;
 
+%"good" traj
+xPoint = 3.32;
+yPoint = -1.35;
+zPoint = 18.86;
+
 for itrck = 1 : length(allresults(iplane).someTrajectories) 
    clear X Y Z
    X = allresults(iplane).someTrajectories(itrck).x3D;
