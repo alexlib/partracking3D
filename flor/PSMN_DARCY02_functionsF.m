@@ -728,12 +728,12 @@ function [itraj2,dtraj,listPotTracks,prelist] = DARCY02_matchingTracks(itrajCam0
 % it finds the trajectory in camera 1
 %
 minTintersect = 10; % necessary overlapping time
-distThresh = 10;
+distThresh = 10; %px
 dstimestep = 5;
 
 tminCAM01 = min(trajArray_CAM1(itrajCam0).track(:,3));
 tmaxCAM01 = max(trajArray_CAM1(itrajCam0).track(:,3));
-tmean = round(     length(trajArray_CAM1(itrajCam0).track(:,3))/2     );
+tmean = round(length(trajArray_CAM1(itrajCam0).track(:,3))/2);
 xcam0 = trajArray_CAM1(itrajCam0).track(tmean,1);
 ycam0 = trajArray_CAM1(itrajCam0).track(tmean,2);
 [xcam1,ycam1] = transformPointsInverse(tform1,xcam0,ycam0);
@@ -757,7 +757,7 @@ end
 prelist = find(dtraj<distThresh);
 
 for iic = 1 : length(prelist) %1 : length(trajArray_CAM2RAW)
-   ic = prelist(iic);
+    ic = prelist(iic);
     tminCAM02 = min(trajArray_CAM2RAW(ic).track(:,3));
     tmaxCAM02 = max(trajArray_CAM2RAW(ic).track(:,3));
     clear A B C

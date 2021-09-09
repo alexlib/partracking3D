@@ -75,26 +75,37 @@ zlabel('z')
 title('Matched trajs')
 
 %%
-%I choose some by hand
-% iexpe=8; iplane=31
 
-badTracks = [112,132,218];
-goodTracks = [];
-
-badTransf = struct();
-goodTransf = struct();
-
-j=1
-for i = badTracks
-    j = j+1
-    badTransf(j) = allresults(iplane).tform1.T
+%plot variability in each tranf coordinate
+for i = 1:length(allresults)
+xx(i) = allresults(i).tform1.T(1,1);
+yy(i) = allresults(i).tform1.T(2,2);
+zz(i) = allresults(i).tform1.T(3,3);
+xy(i) = allresults(i).tform1.T(1,2);
+xz(i) = allresults(i).tform1.T(1,3);
+yx(i) = allresults(i).tform1.T(2,1);
+yz(i) = allresults(i).tform1.T(2,3);
+zx(i) = allresults(i).tform1.T(3,1);
+zy(i) = allresults(i).tform1.T(3,2);
 end
 
-j=1
-for i = goodTracks
-    j = j+1
-    goodTransf(j) = allresults(iplane).tform1.T
-end
+colors=jet(9);
+figure;
+hold on
+plot(xx,'-o','color',colors(1,:),'markerFaceColor',colors(1,:),'MarkerEdgeColor',colors(1,:))
+plot(yy,'-o','color',colors(2,:),'markerFaceColor',colors(2,:),'MarkerEdgeColor',colors(2,:))
+plot(zz,'-o','color',colors(3,:),'markerFaceColor',colors(3,:),'MarkerEdgeColor',colors(3,:))
+plot(xy,'-o','color',colors(4,:),'markerFaceColor',colors(4,:),'MarkerEdgeColor',colors(4,:))
+plot(xz,'-o','color',colors(5,:),'markerFaceColor',colors(5,:),'MarkerEdgeColor',colors(5,:))
+plot(yx,'-o','color',colors(6,:),'markerFaceColor',colors(6,:),'MarkerEdgeColor',colors(6,:))
+plot(yz,'-o','color',colors(7,:),'markerFaceColor',colors(7,:),'MarkerEdgeColor',colors(7,:))
+plot(zx,'-o','color',colors(8,:),'markerFaceColor',colors(8,:),'MarkerEdgeColor',colors(8,:))
+plot(xz,'-o','color',colors(9,:),'markerFaceColor',colors(9,:),'MarkerEdgeColor',colors(9,:))
+legend('xx','yy','zz','xy','xz','yx','yz','zx','zy')
+xlabel('Plane')
+ylabel('Transformation')
+
+
 
  
 
