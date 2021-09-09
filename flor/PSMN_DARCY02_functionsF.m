@@ -2,69 +2,30 @@
 %
 % things to solve: long min of trajectories and itStep
 % 
-close all
-clear all
+% close all
+% clear all
 
 cd('C:\Users\darcy\Desktop\git\Robust-Estimation')
 load('all_IFPEN_DARCY02_experiments.mat')
-
-
-%iexpe = 2:
-% folderScriptshell = 'C:\Users\darcy\Desktop\git\Robust-Estimation\';
-% folderExperiment = 'D:\IFPEN\analysisExperiments\analysis_expe_2021_06_17\run02\';
-% nameAllTraj = 'alltraj_20210617_run02';
-% 
-%  iexpe = 6;
-%  folderScriptshell = allExpeStrct(iexpe).analysisFolder;
-%  folderExperiment  = folderScriptshell;
-%  nameAllTraj = 'alltraj_20210617_run02.mat';
-%NOTE FLOR: this one works pretty well but there's an isolated 
-%point that it's outside the lightsheet
-
-% iexpe = 7;
-% folderScriptshell = allExpeStrct(iexpe).analysisFolder;
-% folderExperiment  = folderScriptshell;
-% nameAllTraj = 'alltraj_2021_08_13_electroVavle_at_20percent.mat';
 
 iexpe = 8;
 folderScriptshell = allExpeStrct(iexpe).analysisFolder;
 folderExperiment  = folderScriptshell;
 nameAllTraj = 'alltraj_2021_08_15_electroVavle_at_40percent.mat';
-% 
-% iexpe = 2;
-% folderScriptshell = allExpeStrct(iexpe).analysisFolder;
-% folderExperiment = folderScriptshell;
-% nameAllTraj = 'alltraj_2021_05_05.mat';
-
 
 planeI = 30;    
 planeF = 31;
 %% matching and crossing the rays
 allresults = PSMN_DARCY02(folderScriptshell,folderExperiment,nameAllTraj,iexpe,planeI,planeF);
 
-
 %% PSMN_DARCY02
 function allresults = PSMN_DARCY02(folderScriptshell,folderExperiment,nameAllTraj,iexpe,planeI,planeF)
-%
-% folderScriptshell
-% folderExperiment = 'D:\IFPEN\analysisExperiments\analysis_expe_2021_06_17\run02';
-% nameAllTraj
-% iexpe = 6 / 1 / 2 / 3
-% planeI = 1;
-% planeF = 1;
-%
-%
-%
-
 fprintf('start \n' );
 
-cd(folderScriptshell)
-load('all_IFPEN_DARCY02_experiments.mat')
+% cd(folderScriptshell)
+% load('all_IFPEN_DARCY02_experiments.mat')
 
 allresults = struct();
-% CHECK WITH FLOR : cd(allExpeStrct(iexpe).analysisFolder)
-% cd(folderExperiment)
-% file_log_ID = fopen(sprintf('log_%s.txt',allExpeStrct(iexpe).name), 'a');
 
 % load centers
 cd(folderExperiment)
@@ -279,10 +240,6 @@ ci = clock;
     someTrajectories = struct();
     Ttype = 'T1';%T1
     
-    % CHECK WITH FLOR:
-    %     CalibFile = allExpeStrct(iexpe).CalibFile;
-    %     %calibTemp = load(CalibFile,'calib'); calib = calibTemp.calib;
-    %     calib = allExpeStrct(iexpe).calib;
     calib = allExpeStrct(iexpe).calib;
     
     CalibFileCam1 = calib(:,1);

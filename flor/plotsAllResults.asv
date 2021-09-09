@@ -6,7 +6,8 @@ folderScriptshell = allExpeStrct(iexpe).analysisFolder;
 folderExperiment  = folderScriptshell;
 nameAllTraj = 'alltraj_2021_08_15_electroVavle_at_40percent.mat';
 
-cd(folderExperiment)
+cd(folderExperiment+'\old')
+cd(strcat(folderExperiment,'old'))
 nameResults = 'allResults_auFilDeLEau.mat';
 load(nameResults)
 
@@ -105,10 +106,21 @@ xPoint = 15.47;
 yPoint = -10.16;
 zPoint = 26;
 
-%"goog" traj
+%"good" traj
 xPoint = 3.32;
 yPoint = -1.35;
 zPoint = 18.86;
+
+xPoint = -7.4;
+yPoint = -17.82;
+zPoint = 16.;
+
+%these dont look to be the same
+xPoint = -24;
+yPoint = 11.64;
+zPoint = 19.48;
+
+
 
 for itrck = 1 : length(allresults(iplane).someTrajectories) 
    clear X Y Z
@@ -140,7 +152,8 @@ title('CAM2')
 xlabel('x')
 ylabel('y')
 subplot(1,3,3)
-box on, view(3)
+box on
+view(3)
 X = allresults(iplane).someTrajectories(trck).x3D;
 Y = allresults(iplane).someTrajectories(trck).y3D;
 Z = allresults(iplane).someTrajectories(trck).z3D;
