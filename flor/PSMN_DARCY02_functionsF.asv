@@ -2,47 +2,23 @@
 %
 % things to solve: long min of trajectories and itStep
 % 
-close all
-clear all
+% close all
+ clear all
 
 cd('C:\Users\darcy\Desktop\git\Robust-Estimation')
 load('all_IFPEN_DARCY02_experiments.mat')
-
-
-%iexpe = 2:
-% folderScriptshell = 'C:\Users\darcy\Desktop\git\Robust-Estimation\';
-% folderExperiment = 'D:\IFPEN\analysisExperiments\analysis_expe_2021_06_17\run02\';
-% nameAllTraj = 'alltraj_20210617_run02';
-% 
-%  iexpe = 6;
-%  folderScriptshell = allExpeStrct(iexpe).analysisFolder;
-%  folderExperiment  = folderScriptshell;
-%  nameAllTraj = 'alltraj_20210617_run02.mat';
-%NOTE FLOR: this one works pretty well but there's an isolated 
-%point that it's outside the lightsheet
-
-% iexpe = 7;
-% folderScriptshell = allExpeStrct(iexpe).analysisFolder;
-% folderExperiment  = folderScriptshell;
-% nameAllTraj = 'alltraj_2021_08_13_electroVavle_at_20percent.mat';
 
 iexpe = 8;
 folderScriptshell = allExpeStrct(iexpe).analysisFolder;
 folderExperiment  = folderScriptshell;
 nameAllTraj = 'alltraj_2021_08_15_electroVavle_at_40percent.mat';
-% 
-% iexpe = 2;
-% folderScriptshell = allExpeStrct(iexpe).analysisFolder;
-% folderExperiment = folderScriptshell;
-% nameAllTraj = 'alltraj_2021_05_05.mat';
 
-
-planeI = 30;    
-planeF = 31;
+planeI = 1;    
+planeF = 5;
 %% matching and crossing the rays
 allresults = PSMN_DARCY02(folderScriptshell,folderExperiment,nameAllTraj,iexpe,planeI,planeF);
 
-
+%% PSMN_DARCY02
 %% PSMN_DARCY02
 function allresults = PSMN_DARCY02(folderScriptshell,folderExperiment,nameAllTraj,iexpe,planeI,planeF)
 %
@@ -89,7 +65,7 @@ for iplane = planeI : planeF
     totalnFrames = size(CC1,2);
     
     
-fprintf('plane %0.3d - 2 \n', iplane  );
+fprintf('plane %0.3d - normxcorr2 \n', iplane  );
 ci = clock;
     %  normxcorr2 - we build the images
     ACC1 = zeros(him,wim,'uint8');
@@ -116,7 +92,7 @@ ci = clock;
     % first pass
     xm = 00+round(wim/2);
     ym = 00+round(him/2);
-    wsub = 250; %round(0.25*mean(xm,ym)); % width correlation template image
+    wsub = 400%250; %round(0.25*mean(xm,ym)); % width correlation template image
     
     [xoffSet,yoffSet] = imageCorrelation(xm,ym,ACC1,ACC2,wsub,filterOrder);
     
@@ -133,8 +109,8 @@ ci = clock;
     fprintf('plane %0.3d - find corresponding points between the 2 cameras for tform1 \n', iplane  );
     ci = clock;
     
-    wti = 300; % width template images
-    wstep = 100; % step for sampling the image
+    wti = 100; % 200 width template images
+    wstep = 80; %100 % step for sampling the image
     nPartMin = 100; % minimum number of particles to calculate the correlation
     tmpl_IM_tStr = struct(); % structure storing information on template images
     
@@ -189,7 +165,7 @@ ci = clock;
     corOK = ([tmpl_IM_tStr.correlable] == 1);
     fixedPoints  = [[tmpl_IM_tStr(corOK).x]',      [tmpl_IM_tStr(corOK).y]'];
     movingPoints = [[tmpl_IM_tStr(corOK).xoffSet]',[tmpl_IM_tStr(corOK).yoffSet]']; 
-    transformationType = 'affine';
+    transformationType = 'affine'; %affine
     tform1 = fitgeotrans(movingPoints,fixedPoints,transformationType);
     cf = clock;
     fprintf('\t \t \t it took %4.0f s \n',etime(cf,ci))
@@ -277,7 +253,7 @@ ci = clock;
     %%%%% %%%%% %%%%% %%%%% %%%%%
     % cross rays with trajectories found with DARCY02_matchingTracks
     someTrajectories = struct();
-    Ttype = 'T1';%T1
+    Ttype = 'T1';
     
     % CHECK WITH FLOR:
     %     CalibFile = allExpeStrct(iexpe).CalibFile;
@@ -363,7 +339,7 @@ ci = clock;
     allresults(iplane).tform1 = tform1;
     
     cd(folderExperiment)
-    save('allResults_auFilDeLEau.mat','allresults')
+    save('allResults_auFilDeLEau_affine.mat','allresults')
     
     cf = clock;
     fprintf('\t \t \t it took %4.0f s \n',etime(cf,ci))
@@ -771,12 +747,12 @@ function [itraj2,dtraj,listPotTracks,prelist] = DARCY02_matchingTracks(itrajCam0
 % it finds the trajectory in camera 1
 %
 minTintersect = 10; % necessary overlapping time
-distThresh = 10;
+distThresh = 10; %px
 dstimestep = 5;
 
 tminCAM01 = min(trajArray_CAM1(itrajCam0).track(:,3));
 tmaxCAM01 = max(trajArray_CAM1(itrajCam0).track(:,3));
-tmean = round(     length(trajArray_CAM1(itrajCam0).track(:,3))/2     );
+tmean = round(length(trajArray_CAM1(itrajCam0).track(:,3))/2);
 xcam0 = trajArray_CAM1(itrajCam0).track(tmean,1);
 ycam0 = trajArray_CAM1(itrajCam0).track(tmean,2);
 [xcam1,ycam1] = transformPointsInverse(tform1,xcam0,ycam0);
@@ -800,7 +776,7 @@ end
 prelist = find(dtraj<distThresh);
 
 for iic = 1 : length(prelist) %1 : length(trajArray_CAM2RAW)
-   ic = prelist(iic);
+    ic = prelist(iic);
     tminCAM02 = min(trajArray_CAM2RAW(ic).track(:,3));
     tmaxCAM02 = max(trajArray_CAM2RAW(ic).track(:,3));
     clear A B C

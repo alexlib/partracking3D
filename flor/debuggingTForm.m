@@ -105,11 +105,11 @@ plot(xy,'-o','color',colors(4,:),'markerFaceColor',colors(4,:),'MarkerEdgeColor'
 plot(yx,'-o','color',colors(5,:),'markerFaceColor',colors(5,:),'MarkerEdgeColor',colors(5,:))
 %plot(yz,'-o','color',colors(7,:),'markerFaceColor',colors(7,:),'MarkerEdgeColor',colors(7,:))
 plot(zx,'-o','color',colors(6,:),'markerFaceColor',colors(6,:),'MarkerEdgeColor',colors(6,:))
-plot(xz,'-o','color',colors(7,:),'markerFaceColor',colors(7,:),'MarkerEdgeColor',colors(7,:))
+plot(zy,'-o','color',colors(7,:),'markerFaceColor',colors(7,:),'MarkerEdgeColor',colors(7,:))
 legend('xx','yy','zz','xy','yx','zx','zy')
 xlabel('Plane')
 ylabel('Transformation')
-
+%%
 
 
  

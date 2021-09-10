@@ -5,6 +5,7 @@ iexpe = 8;
 folderScriptshell = allExpeStrct(iexpe).analysisFolder;
 folderExperiment  = folderScriptshell;
 nameAllTraj = 'alltraj_2021_08_15_electroVavle_at_40percent.mat';
+iplane = 31;
 
 allresults = struct();
 
@@ -38,12 +39,35 @@ for it = 1 : totalnFrames
         ACC2(yim2,xim2) = ACC1(yim2,xim2) + 255;
     end
 end
+
+hcam01 = figure;
+sgtitle('Raw images')
+subplot(1,2,1)
+imagesc(20*ACC1)%, colormap gray
+title('CAM1')
+subplot(1,2,2)
+imagesc(20*ACC2)%, colormap gray
+title('CAM2')
+%%
+filterOrder = 1;
+figure;
+sgtitle('Filtered images, order=10')
+subplot(1,2,1)
+imagesc(20*imgaussfilt(ACC1,filterOrder))%, colormap gray
+title('CAM1')
+subplot(1,2,2)
+imagesc(20*imgaussfilt(ACC2,filterOrder))%, colormap gray
+title('CAM2')
+
+
+
+%%
 filterOrder = 10;
 
 % first pass
 xm = 00+round(wim/2);
 ym = 00+round(him/2);
-wsub = 250; %round(0.25*mean(xm,ym)); % width correlation template image
+wsub = 200;%250 %round(0.25*mean(xm,ym)); % width correlation template image
 
 [xoffSet,yoffSet] = imageCorrelation(xm,ym,ACC1,ACC2,wsub,filterOrder);
 
@@ -56,11 +80,17 @@ R = (dxPass01^2+dyPass01^2)^(1/2);
 % ROBUST ESTIMATION PART 1.3 normxcorr2 pass 02 (on a small window)
 
 
-wti = 300; % width template images
-wstep = 100; % step for sampling the image
+wti = 100; % width template images
+wstep = 80; % step for sampling the image
 nPartMin = 100; % minimum number of particles to calculate the correlation
 tmpl_IM_tStr = struct(); % structure storing information on template images
-
+hcam01 = figure('defaultAxesFontSize',20);
+imagesc(20*ACC1)%, colormap gray
+title('Camera1'), hold on
+clear nCol nRow
+nCol = wim / wstep;
+nLin = him / wstep;
+iti = 0;
 % cut the image in a lot of small images
 clear nCol nRow
 nCol = wim / wstep;
@@ -85,10 +115,17 @@ for iCol = 1 : nCol
                 (1.5*dxPass01) + xc + wti/2 > 0 && ...
                 (1.5*dyPass01) + yc + wti/2 > 0
             tmpl_IM_tStr(iti).correlable = 1;
+            pcol='g';
         else
             tmpl_IM_tStr(iti).correlable = 0;
+            pcol='b';
         end
-
+        figure(hcam01)
+        clear xp yp
+        xp = .5*[-1  1  1 -1 -1]*wti+tmpl_IM_tStr(iti).x;
+        yp = .5*[-1 -1  1  1 -1]*wti+tmpl_IM_tStr(iti).y;
+        patch('xdata',xp,'ydata',yp,'faceColor','none','faceAlpha',.3,'edgeColor',pcol)
+        pause(.2)
         if tmpl_IM_tStr(iti).correlable == 1
             clear xm ym xoffSet yoffSet
             xm = tmpl_IM_tStr(iti).x;
@@ -97,10 +134,18 @@ for iCol = 1 : nCol
                 round(wti/2),filterOrder,'cleanC',dxPass01,dyPass01,150);
             tmpl_IM_tStr(iti).xoffSet = xoffSet;
             tmpl_IM_tStr(iti).yoffSet = yoffSet;
+
+            figure(hcam01)
+            if abs(xoffSet-xm- dxPass01)<100 && abs(yoffSet-ym- dyPass01)<100
+                quiver(xm,ym,xoffSet-xm,yoffSet-ym,'-r','lineWidth',2)
+            else
+                tmpl_IM_tStr(iti).correlable = 0;
+                quiver(xm,ym,xoffSet-xm,yoffSet-ym,'--r','lineWidth',1)
+            end
         end
     end
 end
-
+%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % build tform1
@@ -111,12 +156,15 @@ movingPoints = [[tmpl_IM_tStr(corOK).xoffSet]',[tmpl_IM_tStr(corOK).yoffSet]'];
 transformationType = 'affine'; % 'nonreflectivesimilarity' OR 'similarity'
 tform1 = fitgeotrans(movingPoints,fixedPoints,transformationType);
 
-
 %% check tform1 is OK
-figure,
-imagesc(ACC1)
-figure,
-imagesc(ACC2)
+
+ACC2T = transformPointsForward(tform1,ACC2,ACC2);
+figure;
+imshow(ACC1)
+plot(ACC2T(:,1),ACC2T(:,2),'.')
+legend('C1','C2on1')
+
+
 %%
 
 % from BLP TRAJECTOIRE 2D
@@ -459,7 +507,7 @@ end
 trajArray_CAM1_sttchd = trajArray_CAM1;
 
 end
-%%
+%% matching
 function [itraj2,dtraj,listPotTracks,prelist] = DARCY02_matchingTracks(itrajCam0,trajArray_CAM1,trajArray_CAM2RAW,tform1)
 % We indicate the trajectory in camera 0,
 % it finds the trajectory in camera 1
@@ -473,7 +521,7 @@ tmaxCAM01 = max(trajArray_CAM1(itrajCam0).track(:,3));
 tmean = round(     length(trajArray_CAM1(itrajCam0).track(:,3))/2     );
 xcam0 = trajArray_CAM1(itrajCam0).track(tmean,1);
 ycam0 = trajArray_CAM1(itrajCam0).track(tmean,2);
-[xcam1,ycam1] = transformPointsInverse(1,xcam0,ycam0);
+[xcam1,ycam1] = transformPointsInverse(tform1,xcam0,ycam0);
 
 
 % build the list of potential matching trajectory

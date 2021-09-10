@@ -3,7 +3,7 @@
 % things to solve: long min of trajectories and itStep
 % 
 % close all
-% clear all
+ clear all
 
 cd('C:\Users\darcy\Desktop\git\Robust-Estimation')
 load('all_IFPEN_DARCY02_experiments.mat')
@@ -13,19 +13,34 @@ folderScriptshell = allExpeStrct(iexpe).analysisFolder;
 folderExperiment  = folderScriptshell;
 nameAllTraj = 'alltraj_2021_08_15_electroVavle_at_40percent.mat';
 
-planeI = 30;    
-planeF = 31;
+planeI = 25;    
+planeF = 35;
 %% matching and crossing the rays
 allresults = PSMN_DARCY02(folderScriptshell,folderExperiment,nameAllTraj,iexpe,planeI,planeF);
 
 %% PSMN_DARCY02
+%% PSMN_DARCY02
 function allresults = PSMN_DARCY02(folderScriptshell,folderExperiment,nameAllTraj,iexpe,planeI,planeF)
+%
+% folderScriptshell
+% folderExperiment = 'D:\IFPEN\analysisExperiments\analysis_expe_2021_06_17\run02';
+% nameAllTraj
+% iexpe = 6 / 1 / 2 / 3
+% planeI = 1;
+% planeF = 1;
+%
+%
+%
+
 fprintf('start \n' );
 
-% cd(folderScriptshell)
-% load('all_IFPEN_DARCY02_experiments.mat')
+cd(folderScriptshell)
+load('all_IFPEN_DARCY02_experiments.mat')
 
 allresults = struct();
+% CHECK WITH FLOR : cd(allExpeStrct(iexpe).analysisFolder)
+% cd(folderExperiment)
+% file_log_ID = fopen(sprintf('log_%s.txt',allExpeStrct(iexpe).name), 'a');
 
 % load centers
 cd(folderExperiment)
@@ -50,7 +65,7 @@ for iplane = planeI : planeF
     totalnFrames = size(CC1,2);
     
     
-fprintf('plane %0.3d - 2 \n', iplane  );
+fprintf('plane %0.3d - normxcorr2 \n', iplane  );
 ci = clock;
     %  normxcorr2 - we build the images
     ACC1 = zeros(him,wim,'uint8');
@@ -72,12 +87,12 @@ ci = clock;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % normxcorr2 pass 01 (on a large window)
     % xm,ym : fixed points in camera 1
-    filterOrder = 10;
+    filterOrder = 1;
     
     % first pass
     xm = 00+round(wim/2);
     ym = 00+round(him/2);
-    wsub = 250; %round(0.25*mean(xm,ym)); % width correlation template image
+    wsub = 400;%250; %round(0.25*mean(xm,ym)); % width correlation template image
     
     [xoffSet,yoffSet] = imageCorrelation(xm,ym,ACC1,ACC2,wsub,filterOrder);
     
@@ -94,8 +109,8 @@ ci = clock;
     fprintf('plane %0.3d - find corresponding points between the 2 cameras for tform1 \n', iplane  );
     ci = clock;
     
-    wti = 300; % width template images
-    wstep = 100; % step for sampling the image
+    wti = 100; % 200 width template images
+    wstep = 80; %100 % step for sampling the image
     nPartMin = 100; % minimum number of particles to calculate the correlation
     tmpl_IM_tStr = struct(); % structure storing information on template images
     
@@ -150,7 +165,7 @@ ci = clock;
     corOK = ([tmpl_IM_tStr.correlable] == 1);
     fixedPoints  = [[tmpl_IM_tStr(corOK).x]',      [tmpl_IM_tStr(corOK).y]'];
     movingPoints = [[tmpl_IM_tStr(corOK).xoffSet]',[tmpl_IM_tStr(corOK).yoffSet]']; 
-    transformationType = 'affine';
+    transformationType = 'affine'; %affine
     tform1 = fitgeotrans(movingPoints,fixedPoints,transformationType);
     cf = clock;
     fprintf('\t \t \t it took %4.0f s \n',etime(cf,ci))
@@ -238,8 +253,12 @@ ci = clock;
     %%%%% %%%%% %%%%% %%%%% %%%%%
     % cross rays with trajectories found with DARCY02_matchingTracks
     someTrajectories = struct();
-    Ttype = 'T1';%T1
+    Ttype = 'T1';
     
+    % CHECK WITH FLOR:
+    %     CalibFile = allExpeStrct(iexpe).CalibFile;
+    %     %calibTemp = load(CalibFile,'calib'); calib = calibTemp.calib;
+    %     calib = allExpeStrct(iexpe).calib;
     calib = allExpeStrct(iexpe).calib;
     
     CalibFileCam1 = calib(:,1);
@@ -320,7 +339,7 @@ ci = clock;
     allresults(iplane).tform1 = tform1;
     
     cd(folderExperiment)
-    save('allResults_auFilDeLEau.mat','allresults')
+    save('allResults_auFilDeLEau_filterorder_one.mat','allresults')
     
     cf = clock;
     fprintf('\t \t \t it took %4.0f s \n',etime(cf,ci))

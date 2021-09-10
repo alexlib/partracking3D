@@ -5,6 +5,7 @@ iexpe = 8;
 folderScriptshell = allExpeStrct(iexpe).analysisFolder;
 folderExperiment  = folderScriptshell;
 nameAllTraj = 'alltraj_2021_08_15_electroVavle_at_40percent.mat';
+iplane = 31;
 
 allresults = struct();
 
@@ -88,7 +89,12 @@ for iCol = 1 : nCol
         else
             tmpl_IM_tStr(iti).correlable = 0;
         end
-
+        figure(hcam01)
+        clear xp yp
+        xp = .5*[-1  1  1 -1 -1]*wti+tmpl_IM_tStr(iti).x;
+        yp = .5*[-1 -1  1  1 -1]*wti+tmpl_IM_tStr(iti).y;
+        patch('xdata',xp,'ydata',yp,'faceColor','none','faceAlpha',.3,'edgeColor',pcol)
+        pause(.2)
         if tmpl_IM_tStr(iti).correlable == 1
             clear xm ym xoffSet yoffSet
             xm = tmpl_IM_tStr(iti).x;
@@ -97,6 +103,14 @@ for iCol = 1 : nCol
                 round(wti/2),filterOrder,'cleanC',dxPass01,dyPass01,150);
             tmpl_IM_tStr(iti).xoffSet = xoffSet;
             tmpl_IM_tStr(iti).yoffSet = yoffSet;
+
+            figure(hcam01)
+            if abs(xoffSet-xm- dxPass01)<100 && abs(yoffSet-ym- dyPass01)<100
+                quiver(xm,ym,xoffSet-xm,yoffSet-ym,'-r','lineWidth',2)
+            else
+                tmpl_IM_tStr(iti).correlable = 0;
+                quiver(xm,ym,xoffSet-xm,yoffSet-ym,'--r','lineWidth',1)
+            end
         end
     end
 end
@@ -108,8 +122,27 @@ clear fixedPoints movingPoints
 corOK = ([tmpl_IM_tStr.correlable] == 1);
 fixedPoints  = [[tmpl_IM_tStr(corOK).x]',      [tmpl_IM_tStr(corOK).y]'];
 movingPoints = [[tmpl_IM_tStr(corOK).xoffSet]',[tmpl_IM_tStr(corOK).yoffSet]']; 
-transformationType = 'affine';
+transformationType = 'affine'; % 'nonreflectivesimilarity' OR 'similarity'
 tform1 = fitgeotrans(movingPoints,fixedPoints,transformationType);
+
+%% check tform1 is OK
+figure;
+sgtitle('Raw images')
+subplot(1,2,1)
+imagesc(ACC1)
+title('CAM1')
+subplot(1,2,2)
+imagesc(ACC2)
+title('CAM2')
+
+ACC2T = transformPointsForward(tform1,ACC2,ACC2);
+figure;
+imshow(ACC1)
+plot(ACC2T(:,1),ACC2T(:,2),'.')
+legend('C1','C2on1')
+
+
+%%
 
 % from BLP TRAJECTOIRE 2D
 clear part_cam1 part_cam2 part_cam2RAW
@@ -451,7 +484,7 @@ end
 trajArray_CAM1_sttchd = trajArray_CAM1;
 
 end
-%%
+%% matching
 function [itraj2,dtraj,listPotTracks,prelist] = DARCY02_matchingTracks(itrajCam0,trajArray_CAM1,trajArray_CAM2RAW,tform1)
 % We indicate the trajectory in camera 0,
 % it finds the trajectory in camera 1

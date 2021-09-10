@@ -136,6 +136,8 @@ save(nameAllTraj,'allTraj','-v7.3')
 % planeI = 13;    
 % planeF = 13;
 %% matching and crossing the rays
+planeI=1;
+planeF=40;
 folderExperiment = allExpeStrct(iexpe).analysisFolder;
 folderScriptshell = folderExperiment;
 allresults = PSMN_DARCY02(folderScriptshell,folderExperiment,nameAllTraj,iexpe,planeI,planeF);
@@ -557,7 +559,7 @@ ci = clock;
     fprintf('plane %0.3d - find corresponding points between the 2 cameras for tform1 \n', iplane  );
     ci = clock;
     
-    wti = 300; % width template images
+    wti = 200; % width template images
     wstep = 100; % step for sampling the image
     nPartMin = 100; % minimum number of particles to calculate the correlation
     tmpl_IM_tStr = struct(); % structure storing information on template images
@@ -613,7 +615,7 @@ ci = clock;
     corOK = ([tmpl_IM_tStr.correlable] == 1);
     fixedPoints  = [[tmpl_IM_tStr(corOK).x]',      [tmpl_IM_tStr(corOK).y]'];
     movingPoints = [[tmpl_IM_tStr(corOK).xoffSet]',[tmpl_IM_tStr(corOK).yoffSet]']; 
-    transformationType = 'affine';
+    transformationType = 'nonreflectivesimilarity';
     tform1 = fitgeotrans(movingPoints,fixedPoints,transformationType);
     cf = clock;
     fprintf('\t \t \t it took %4.0f s \n',etime(cf,ci))
