@@ -8,12 +8,12 @@ nameAllTraj = 'alltraj_2021_08_15_electroVavle_at_40percent.mat';
 iplane = 31;
 
 allresults = struct();
-
+%%
 % load centers
 cd(folderExperiment)
 allTrajLOAD = load(nameAllTraj);
 allTraj = allTrajLOAD.allTraj;
-
+%%
 iSeqa = iplane*2-1;
 iSeqb = iplane*2;
 
@@ -49,7 +49,7 @@ subplot(1,2,2)
 imagesc(20*ACC2)%, colormap gray
 title('CAM2')
 %%
-filterOrder = 1;
+filterOrder = 3;
 figure;
 sgtitle('Filtered images, order=10')
 subplot(1,2,1)
@@ -58,9 +58,6 @@ title('CAM1')
 subplot(1,2,2)
 imagesc(20*imgaussfilt(ACC2,filterOrder))%, colormap gray
 title('CAM2')
-
-
-
 %%
 filterOrder = 10;
 
@@ -80,7 +77,7 @@ R = (dxPass01^2+dyPass01^2)^(1/2);
 % ROBUST ESTIMATION PART 1.3 normxcorr2 pass 02 (on a small window)
 
 
-wti = 100; % width template images
+wti = 250; % width template images
 wstep = 80; % step for sampling the image
 nPartMin = 100; % minimum number of particles to calculate the correlation
 tmpl_IM_tStr = struct(); % structure storing information on template images
@@ -157,17 +154,18 @@ transformationType = 'affine'; % 'nonreflectivesimilarity' OR 'similarity'
 tform1 = fitgeotrans(movingPoints,fixedPoints,transformationType);
 
 %% check tform1 is OK
-
-ACC2T = transformPointsForward(tform1,ACC2,ACC2);
+ACC2T = imwarp(ACC2,tform1, 'OutputView', imref2d( size(ACC1) ));
+falseColorOverlay = imfuse( 40*ACC1, 40*ACC2T);
+imshow( falseColorOverlay, 'initialMagnification', 'fit');
+%%
+ratio = ACC1./ACC2T;
 figure;
-imshow(ACC1)
-plot(ACC2T(:,1),ACC2T(:,2),'.')
-legend('C1','C2on1')
-
+imshow(ratio)
+title('CAM1/CAM2(CAM1)')
 
 %%
 
-% from BLP TRAJECTOIRE 2D
+% from BenjaminLaPlace TRAJECTOIRE 2D
 clear part_cam1 part_cam2 part_cam2RAW
 for it = 1 : size(CC1,2)
     part_cam1(it).pos(:,1) = [CC1(it).X]; % out_CAM1(:,1);
@@ -217,17 +215,27 @@ ikill02 = find(lt2<ltraj);
 
 trajArray_CAM1(ikill01)=[];
 trajArray_CAM2RAW(ikill02)=[];
-
-
-%%%%% %%%%% %%%%% %%%%% %%%%%
+%% showing the trajectories
+figure('defaultAxesFontSize',20), box on, hold on
+for itrj = 1 : length(allTraj(61).trajArray)
+    clear xt yt
+    xt = allTraj(61).trajArray(itrj).track(:,1);
+    yt = allTraj(61).trajArray(itrj).track(:,2);
+    [xt1, yt1] = transformPointsInverse(tform1, xt, yt);
+    plot(xt1,yt1,'o-b')
+end
+for itrj = 1 : length(allTraj(62).trajArray)
+    clear xt yt
+    xt2 = allTraj(62).trajArray(itrj).track(:,1);
+    yt2 = allTraj(62).trajArray(itrj).track(:,2);
+    plot(xt2,yt2,'o-r')
+end
+%%
 %%%%% %%%%% %%%%% %%%%% %%%%%
 % STEP 5 - associate trajectories
 listMatchedTracks = struct(); % list of potential tracks
 ilist = 0;
 for itrajCam0 = 1 : length(trajArray_CAM1)
-%         if (~mod(itrajCam0,100) == 1) || (itrajCam0==1)
-%             fprintf('index trajectory: %0.0f / %0.0f \n',itrajCam0,length(trajArray_CAM1))
-%         end
     [itrajCam1,dtraj,listPotTracks,prelist] = DARCY02_matchingTracks(itrajCam0,trajArray_CAM1,trajArray_CAM2RAW,tform1);
     if itrajCam1
         ilist = ilist +1;
@@ -235,11 +243,113 @@ for itrajCam0 = 1 : length(trajArray_CAM1)
         listMatchedTracks(ilist).trajcam1 = itrajCam1;
     end
 end
-%%%%% %%%%% %%%%% %%%%% %%%%%
-%%%%% %%%%% %%%%% %%%%% %%%%%
-% cross rays with trajectories found with DARCY02_matchingTracks
+%
+
+%% Will show some matched tracks
+figure, hold on
+for ilist = 1 : 10 : length(listMatchedTracks)
+    matchedCam0 = listMatchedTracks(ilist).trajcam0;
+    matchedCam1 = listMatchedTracks(ilist).trajcam1;
+    x0 = trajArray_CAM1(matchedCam0).track(:,1);
+    y0 = trajArray_CAM1(matchedCam0).track(:,2);
+    x1 = trajArray_CAM2RAW(matchedCam1).track(:,1);
+    y1 = trajArray_CAM2RAW(matchedCam1).track(:,2);
+    plot(x0,y0,'-bo')
+    plot(x1,y1,'-ro')
+    %add square around each pair
+end
+
+%% cross rays with trajectories found with DARCY02_matchingTracks
 someTrajectories = struct();
 Ttype = 'T1';%T1
+
+
+calib = allExpeStrct(iexpe).calib;
+
+CalibFileCam1 = calib(:,1);
+CalibFileCam2 = calib(:,2);
+
+for iselTraj = 1 : size(listMatchedTracks,2)
+    itraj1 = listMatchedTracks(iselTraj).trajcam0;
+    itraj2 = listMatchedTracks(iselTraj).trajcam1;
+
+    someTrajectories(iselTraj).itraj1 = itraj1;
+    someTrajectories(iselTraj).itraj2 = itraj2;
+
+    % cross the two choosen rays
+    clear x01 y01 x02 y02 x02incam01 y02incam01
+    tminCAM01 = min(trajArray_CAM1(itraj1).track(:,3));
+    tmaxCAM01 = max(trajArray_CAM1(itraj1).track(:,3));
+    tminCAM02 = min(trajArray_CAM2RAW(itraj2).track(:,3));
+    tmaxCAM02 = max(trajArray_CAM2RAW(itraj2).track(:,3));
+    [A,B,C] = intersect([tminCAM01:tmaxCAM01],[tminCAM02:tmaxCAM02]);
+
+    if A
+        clear x01 y01 x02 y02
+        x01 = trajArray_CAM1(itraj1).track(min(B):max(B),1);
+        y01 = trajArray_CAM1(itraj1).track(min(B):max(B),2);
+        x02 = trajArray_CAM2RAW(itraj2).track(min(C):max(C),1);
+        y02 = trajArray_CAM2RAW(itraj2).track(min(C):max(C),2);
+
+        clear x_pxC1 y_pxC1 x_pxC2 y_pxC2
+        for ixy = 1 : length(x01)
+
+            x_pxC1 = x01(ixy);
+            y_pxC1 = y01(ixy);
+            x_pxC2 = x02(ixy);
+            y_pxC2 = y02(ixy);
+
+            [crossP,D] = crossRays(CalibFileCam1,CalibFileCam2,x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype);
+            if length(crossP)>0
+                someTrajectories(iselTraj).x3D(ixy) = crossP(1);
+                someTrajectories(iselTraj).y3D(ixy) = crossP(2);
+                someTrajectories(iselTraj).z3D(ixy) = crossP(3);
+                %someTrajectories(iselTraj).t(ixy)   = t;         % image number
+                %someTrajectories(iselTraj).t(ixy)   = 20210617T161636-20210617T154756;         % absolute time
+                %someTrajectories(iselTraj).t(ixy)   = t/fps;         % relative time
+                someTrajectories(iselTraj).D(ixy)   = D;
+            end
+        end
+    end
+end
+%% show some trajectories
+
+
+Xb = allresults(iplane).trajArray_CAM1(it1).track(:,1);
+Yb = allresults(iplane).trajArray_CAM1(it1).track(:,2);
+
+Xr = allresults(iplane).trajArray_CAM2RAW(it2).track(:,1);
+Yr = allresults(iplane).trajArray_CAM2RAW(it2).track(:,2);
+
+figure;
+sgtitle(sprintf('Trajectory %0.3d',trck))
+subplot(1,3,1)
+plot(Xb,Yb,'-b','lineWidth',4)
+title('CAM1')
+xlabel('x')
+ylabel('y')
+subplot(1,3,2)
+plot(Xr,Yr,'-r','lineWidth',4)
+title('CAM2')
+xlabel('x')
+ylabel('y')
+subplot(1,3,3)
+box on
+view(3)
+X = allresults(iplane).someTrajectories(trck).x3D;
+Y = allresults(iplane).someTrajectories(trck).y3D;
+Z = allresults(iplane).someTrajectories(trck).z3D;
+plot3(X,Y,Z,'lineWidth',4)
+xlabel('x')
+ylabel('y')
+zlabel('z')
+title('Matched trajs')
+
+
+%%
+%%
+%%
+%% FUNCTIONS
 
 %% imageCorrelation
 % debug the cleaning of C (varargin in function)
@@ -507,14 +617,14 @@ end
 trajArray_CAM1_sttchd = trajArray_CAM1;
 
 end
-%% matching
+%% matching - DARCY02_matchingTracks
 function [itraj2,dtraj,listPotTracks,prelist] = DARCY02_matchingTracks(itrajCam0,trajArray_CAM1,trajArray_CAM2RAW,tform1)
 % We indicate the trajectory in camera 0,
 % it finds the trajectory in camera 1
 %
 minTintersect = 10; % necessary overlapping time
-distThresh = 10;
-dstimestep = 5;
+distThresh = 10;    % maximum distance between trajectories (pixel)
+dstimestep = 5;     % paremeter to smooth calculation of length of trajectory 
 
 tminCAM01 = min(trajArray_CAM1(itrajCam0).track(:,3));
 tmaxCAM01 = max(trajArray_CAM1(itrajCam0).track(:,3));
@@ -592,5 +702,327 @@ if ipt > 0
     end
 end
 
+end
+
+
+%%
+%% crossRays
+function [crossP,D] = crossRays(CalibFileCam1,CalibFileCam2,x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype)
+D = 'nan';
+
+% [P1,V1]=findRaysDarcy02(CalibFileCam1,x_pxC1,y_pxC1,Ttype);
+% [P2,V2]=findRaysDarcy02(CalibFileCam2,x_pxC2,y_pxC2,Ttype);
+
+[P1,V1]=findRaysDarcy02_smallTarget(CalibFileCam1,x_pxC1,y_pxC1,Ttype);
+[P2,V2]=findRaysDarcy02_smallTarget(CalibFileCam2,x_pxC2,y_pxC2,Ttype);
+
+if size(P1,1) == 0
+    crossP = [];
+elseif size(P2,1) == 0
+    crossP = [];
+else
+    
+    if size(P1,1) == 3
+        P1 = P1';
+    end
+    if size(P2,1) == 3
+        P2 = P2';
+    end
+    
+    if isempty(P1)
+        %break
+    elseif isempty(P2)
+        %break
+    end
+    
+    
+    clear lineA0 lineA1 lineB0 lineB1
+    lineA0 = P1;
+    lineA1 = (P1+V1);
+    lineB0 = P2;
+    lineB1 = (P2+V2);
+    [D,Xcp,Ycp,Zcp,Xcq,Ycq,Zcq,Dmin,imin,jmin]= ll_dist3d(lineA0,lineA1,lineB0,lineB1);
+    crossP = ([Xcp,Ycp,Zcp]+[Xcq,Ycq,Zcq])/2; % crossing oping
+    
+end
+end
+
+%% findRaysDarcy02
+function [P,V,XYZ]=findRaysDarcy02(calib,x_px,y_px,Ttype)
+%%% calib : calibration data for this camera
+%%% x_px  : x coordinates in px,
+%%% y_px  : y coordinates in px,
+%%% Ttype : type of the transformation to use (T1=Linear, T3=Cubic).
+
+% calibTemp = load(CalibFile,'calib'); calib = calibTemp.calib;
+
+Npart = numel(x_px);
+Nplans = numel(calib);
+
+XYZ = zeros(numel(calib),3,numel(x_px));
+
+for kplan = 1:Nplans
+    I = inpolygon(x_px,y_px,calib(kplan).pimg(calib(kplan).cHull,1),calib(kplan).pimg(calib(kplan).cHull,2));
+    if max(I)>0
+        if Ttype=='T1'
+            [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T1px2rw),x_px(I==1),y_px(I==1));
+        elseif Ttype=='T3'
+            [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T3px2rw),x_px(I==1),y_px(I==1));
+        end
+        
+        XYZ(kplan,1,I==1)=Xtmp;
+        XYZ(kplan,2,I==1)=Ytmp;
+        XYZ(kplan,3,I==1)=calib(kplan).posPlane;
+    end
+    
+    XYZ(kplan,1,I==0) = NaN;
+    XYZ(kplan,2,I==0) = NaN;
+    XYZ(kplan,3,I==0) = NaN;
+end
+[P, V] = fit3Dline(XYZ);
+
+
+end
+
+%% findRaysDarcy02_smallTarget
+
+function [P,V,XYZ]=findRaysDarcy02_smallTarget(calib,x_px,y_px,Ttype)
+% the line  I = inpolygon(x_px,y_px,calib(kplan).pimg(calib(kplan).cHull,1),calib(kplan).pimg(calib(kplan).cHull,2));
+% is removed for situations when the target really doesn't fill the field
+% of view of the cameras
+
+Npart = numel(x_px);
+Nplans = numel(calib);
+
+XYZ = zeros(numel(calib),3,numel(x_px));
+
+for kplan = 1:Nplans
+    if Ttype=='T1'
+        [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T1px2rw),x_px,y_px);
+    elseif Ttype=='T3'
+        [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T3px2rw),x_px,y_px);
+    end
+    XYZ(kplan,1)=Xtmp;
+    XYZ(kplan,2)=Ytmp;
+    XYZ(kplan,3)=calib(kplan).posPlane;
+end
+[P, V] = fit3Dline(XYZ);
+end
+
+
+
+%% fit3Dline
+function [xyz0,direction] = fit3Dline(XYZ)
+
+if max(max(max(isnan(XYZ)))) ==0
+    [xyz0,direction] = fit3Dline_nonan(XYZ);
+else
+    [P V] = arrayfun(@(I)(fit3Dline_nan(XYZ(:,:,I))),1:size(XYZ,3),'UniformOutput',false);
+    xyz0 = (cell2mat(P'));
+    direction = (cell2mat(V'));
+    
+    xyz0(isnan(xyz0)) = [];
+    direction(isnan(direction)) = [];
+end
+
+end
+
+%% fit3Dline_nan
+function [xyz0,direction]=fit3Dline_nan(XYZ)
+%%% [xyz0,direction]=fit3Dline_jv(XYZ)
+%
+% @MBourgoin 01/2019
+
+I = find(isnan(XYZ(:,1)));
+XYZ(I,:)=[];
+
+if size(XYZ,1)>2
+    
+    xyz0=mean(XYZ);
+    %xyz0=cell2mat(arrayfun(@(x) mean(x.CCrw),Proj,'UniformOutput',false));
+    
+    A=bsxfun(@minus,XYZ,xyz0); %center the data
+    
+    % xyz0=XYZ(3,:);
+    % A= XYZ;
+    
+    % xyz0=XYZ(plan_centre,:);
+    % A=bsxfun(@minus,XYZ,xyz0); %center the data
+    
+    %[U,S,V]=svd(A);
+    [Uac Sac Vac]=arrayfun(@(kkk) svd(A(:,:,kkk)),[1:size(A,3)],'UniformOutput',false);
+    Ua=cat(3,Uac{:});
+    Sa=cat(3,Sac{:});
+    Va=cat(3,Vac{:}); clear Uac Sac Vac;
+    
+    %direction=cross(V(:,end),V(:,end-1));
+    dd=arrayfun(@(x) cross(Va(:,end,x),Va(:,end-1,x)),[1:size(Va,3)],'UniformOutput',false);
+    direction=cat(3,dd{:})';  clear dd;
+else
+    %xyz0 = [NaN NaN NaN];
+    %direction = [NaN NaN NaN];
+    xyz0=[];
+    direction=[];
+end
+
+%line = [xyz0'  direction];
+end
+
+%% fit3Dline_nonan
+function [xyz0,direction]=fit3Dline_nonan(XYZ)
+
+% @JVessaire 01/2019
+
+xyz0=mean(XYZ,1);
+Aa=bsxfun(@minus,XYZ,xyz0); %center the data
+xyz0=squeeze(xyz0)';
+
+%Aa=permute(A,[3 2 1]);
+
+[~, ~, Vac]=arrayfun(@(kkk) svd(Aa(:,:,kkk)),[1:size(Aa,3)],'UniformOutput',false);
+Va=cat(3,Vac{:});
+
+dd=arrayfun(@(x) cross(Va(:,end,x),Va(:,end-1,x)),[1:size(Va,3)],'UniformOutput',false);
+direction=cat(2,dd{:})'; clear dd Vac A;
+
+end
+
+%% ll_dist3d
+function [D,Xcp,Ycp,Zcp,Xcq,Ycq,Zcq,Dmin,imin,jmin]= ll_dist3d(P0,P1,Q0,Q1)
+%ll_dist3d - Find the distances between each pair of straight 3D lines in
+% two sets. Find the closest points on each pair, and the pair with minimum
+% distance. Each line is defined by two distinct points.
+%
+% Input:
+% P0 - array of first points of the first set (m X 3), where m is the
+% number of lines in the first set. P0(j,1), P0(j,2), P0(j,3) are X, Y
+% and X coordinates, accordingly, of point j.
+% Pl - array of second points of the first set (m X 3), where m is the
+% number of lines in the first set. P1(j,1), Pl(j,2), Pl(j,3) are X, Y
+% and X coordinates, accordingly, of point j.
+% Q0 - array of first points of the second set (n % 3), where n is the
+% number of lines in the second set. Q0(k,1), Q0(k,2), Q0(k,3) are X, Y
+% and X coordinates, accordingly, of point k.
+% Ql - array of second points of the second set (n % 3), where n is the
+% number of lines in the second set. Q0(k,1), Q0(k,2), Q0(k,3) are X, Y
+% and X coordinates accordingly of point k.
+% Output:
+% D - array of distances between line pairs (m X n). D(j,k) is the
+% distance between line j from the first (P) set, and line k from the
+% second (Q) set.
+% Xcp - array of X coordinates of closest points belonging to the first
+% (P) set (m X n). Xcp(j,k) is an % coordinate of the closest point on a
+% line j defined by P0(j,:) and P1(j,:), computed to the line k defined
+% by Q0(k,:) and Q1(k,:).
+% Ycp - array of Y coordinates of closest points belonging to the first
+% (P) set (m X n). See Xcp definition.
+% Zcp - array of Y coordinates of closest points belonging to the first
+% (P) set (m X n). See Xcp definition.
+% Xcq - array of X coordinates of closest points belonging to the second
+% (Q) set (m X n). Xcq(j,k) is an % coordinate of the closest point on a
+% line k defined by Q0(k,:) and Q1(k,:), computed to the line j defined
+% by P0(j,:) and P1(1,:).
+% Ycq - array of Y coordinates of closest points belonging to the second
+% (Q) set (m X n). See Xcq definition.
+% Zcq - array of % coordinates of closest points belonging to the second
+% (Q) set (m X n). See Xcq definition.
+%
+% Remarks:
+% Below is a simple unit test for this function. The test creates
+% 2 sets of random 3D lines, finds the distances between each pair of
+% lines, and plots the pair with shortest distance
+% To run the test, uncommnent the following lines:
+%
+% n1 = 4; % number of lines in first set
+% n2 = 2; % number of lines in first set
+% P0 = rand(n1,3); P1 = rand(n1,3); Q0 = rand(n2,3); Q1 = rand(n2,3);
+% [D,Xcp,Ycp,Zcp,Xcq,Ycq,Zcq,Dmin,imin,jmin] = ll_dist3d(P0, P1, Q0, Q1);
+% t = (-2:0.01:2);
+% Tp = repmat(t(:), 1, size(P0,1));
+% Tq = repmat(t(:), 1, size(Q0,1));
+% Xp = repmat(P0(:,1)',[size(t,2), 1]) + Tp.*(repmat(P1(:,1)',[size(t,2),1])-...
+% repmat(P0(:,1)', size(t,2), 1));
+% Yp = repmat(P0(:,2)',[size(t,2), 1]) + Tp.*(repmat(P1(:,2)',[size(t,2),1])-...
+% repmat(P0(:,2)', size(t,2), 1));
+% Zp = repmat(P0(:,3)',[size(t,2), 1]) + Tp.*(repmat(P1(:,3)',[size(t,2),1])-...
+% repmat(P0(:,3)', size(t,2), 1));
+% Xq = repmat(Q0(:,1)', size(t,2), 1) + Tq.*(repmat(Q1(:,1)',size(t,2),1)-...
+% repmat(Q0(:,1)', size(t,2), 1));
+% Yq = repmat(Q0(:,2)',size(t,2), 1) + Tq.*(repmat(Q1(:,2)',size(t,2),1)-...
+% repmat(Q0(:,2)', size(t,2), 1));
+% Zq = repmat(Q0(:,3)',size(t,2), 1) + Tq.*(repmat(Q1(:,3)',size(t,2),1)-...
+% repmat(Q0(:,3)', size(t,2), 1));
+% figure;
+% plot3(Xp(:,imin),Yp(:,imin),Zp(:,imin),Xq(:,jmin),Yq(:,jmin),Zq(:,jmin));
+% hold on
+% plot3(Xcp(imin,jmin),Ycp(imin,jmin),Zcp(imin,jmin),'ro',Xcq(imin,jmin),Ycq(imin,jmin),Zcq(imin,jmin),'mo');
+% axis equal
+% grid on
+% xlabel('X'); ylabel('Y'); zlabel('Z');
+%
+% Revision history:
+% March 03, 2016 - created (Michael Yoshpe)
+%**************************************************************************
+% check inputs validity
+[mp0, np0] = size(P0);
+if(np0 ~=3 )
+    error('Array P0 should of size (m X 3)');
+end
+[mpl, npl] = size(P1);
+if((mpl ~= mp0) || (npl ~= np0))
+    error('P0 and Pl arrays must be of same size');
+end
+[mq0, nq0] = size(Q0);
+if(nq0 ~= 3)
+    error('Array Q0 should of size (n X 3)');
+end
+[mq1, nq1] = size(Q1);
+if((mq1 ~= mq0) || (nq1 ~= nq0))
+    error('Q0 and Ql arrays must be of same size');
+end
+u = P1 - P0; % vectors from P0 to P1
+uu = repmat(u,[1,1,mq0]);
+v = Q1 - Q0; % vectors from Q0 to Q1
+vv = permute(repmat(v,[1,1,mp0]), [3 2 1]);
+PP0 = repmat(P0,[1,1,mq0]);
+QQ0 = permute(repmat(Q0,[1,1,mp0]), [3 2 1]);
+w0 = PP0 - QQ0;
+aa = dot(uu,uu,2);
+bb = dot(uu,vv,2);
+cc = dot(vv,vv,2);
+dd = dot(uu,w0,2);
+ee = dot(vv,w0,2);
+ff = aa.*cc - bb.*bb;
+idx_par = (ff < 5*eps); % indices of parallel lines
+idx_nonpar = ~idx_par; % indices of non-parallel lines
+sc = NaN(mp0,1,mq0);
+tc = NaN(mp0,1,mq0);
+sc(idx_nonpar) = (bb(idx_nonpar).*ee(idx_nonpar) - ...
+    cc(idx_nonpar).*dd(idx_nonpar))./ff(idx_nonpar);
+tc(idx_nonpar) = (aa(idx_nonpar).*ee(idx_nonpar) - ...
+    bb(idx_nonpar).*dd(idx_nonpar))./ff(idx_nonpar);
+PPc = PP0 + repmat(sc, [1,3,1]).*uu;
+QQc = QQ0 + repmat(tc, [1,3,1]).*vv;
+Xcp = permute(PPc(:,1,:), [1 3 2]);
+Ycp = permute(PPc(:,2,:), [1 3 2]);
+Zcp = permute(PPc(:,3,:), [1 3 2]);
+Xcq = permute(QQc(:,1,:), [1 3 2]);
+Ycq = permute(QQc(:,2,:), [1 3 2]);
+Zcq = permute(QQc(:,3,:), [1 3 2]);
+% If there are parallel lines, find the distances  between them
+% Note, that for parallel lines, the closest points will be undefined
+% (will contain NaN's)
+if(any(idx_par))
+    idx_par3 = repmat(idx_par, [1,3,1]); % logical indices
+    PPc(idx_par3) = PP0(idx_par3);
+    tmpl = repmat(dd(idx_par)./bb(idx_par), [1, 3, 1]);
+    tmp2 = vv(find(idx_par3));
+    
+    QQc(idx_par3) = QQ0(idx_par3) + tmpl(:).*tmp2;
+end
+PQc = (PPc - QQc);
+D = permute(sqrt(dot(PQc,PQc,2)), [1 3 2]);
+[Dmin, idx_min] = min(D(:));
+[imin,jmin] = ind2sub(size(D), idx_min);
 end
 

@@ -82,7 +82,7 @@ title('Matched trajs')
 %%
 
 %plot variability in each tranf coordinate
-for i = 1:length(allresults)
+for i = 25:length(allresults)
 xx(i) = allresults(i).tform1.T(1,1);
 yy(i) = allresults(i).tform1.T(2,2);
 zz(i) = allresults(i).tform1.T(3,3);
