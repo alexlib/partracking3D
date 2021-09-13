@@ -1,3 +1,6 @@
+close all
+clear all
+
 cd('C:\Users\darcy\Desktop\git\Robust-Estimation')
 load('all_IFPEN_DARCY02_experiments.mat')
 
@@ -59,12 +62,12 @@ subplot(1,2,2)
 imagesc(20*imgaussfilt(ACC2,filterOrder))%, colormap gray
 title('CAM2')
 %%
-filterOrder = 10;
+filterOrder = 3;
 
 % first pass
 xm = 00+round(wim/2);
 ym = 00+round(him/2);
-wsub = 200;%250 %round(0.25*mean(xm,ym)); % width correlation template image
+wsub = 300;%200;%250 %round(0.25*mean(xm,ym)); % width correlation template image
 
 [xoffSet,yoffSet] = imageCorrelation(xm,ym,ACC1,ACC2,wsub,filterOrder);
 
@@ -243,11 +246,12 @@ for itrajCam0 = 1 : length(trajArray_CAM1)
         listMatchedTracks(ilist).trajcam1 = itrajCam1;
     end
 end
-%
+
 
 %% Will show some matched tracks
 figure, hold on
-for ilist = 1 : 10 : length(listMatchedTracks)
+colors = jet(length(listMatchedTracks));
+for ilist = 1 : length(listMatchedTracks)
     matchedCam0 = listMatchedTracks(ilist).trajcam0;
     matchedCam1 = listMatchedTracks(ilist).trajcam1;
     x0 = trajArray_CAM1(matchedCam0).track(:,1);
@@ -256,8 +260,23 @@ for ilist = 1 : 10 : length(listMatchedTracks)
     y1 = trajArray_CAM2RAW(matchedCam1).track(:,2);
     plot(x0,y0,'-bo')
     plot(x1,y1,'-ro')
-    %add square around each pair
+    clear xp0 yp0 v0 xp1 yp1 v1
+    xp0 = [min(x0),min(x0),max(x0),max(x0)];
+    yp0 = [min(y0),max(y0),max(y0),min(y0)];
+    v0 = [xp0(1) yp0(1); xp0(2) yp0(2); xp0(3) yp0(3); xp0(4) yp0(4)]; 
+    text(xp0(1)-xp0(1)/100,yp0(1)-yp0(1)/100,sprintf('%0.3d',matchedCam0)) 
+    f = [1,2,3,4];
+    patch('Faces',f,'Vertices',v0,'edgeColor',colors(ilist,:),'FaceColor','none','Linewidth',1.5)
+    xp1 = [min(x1),min(x1),max(x1),max(x1)];
+    yp1 = [min(y1),max(y1),max(y1),min(y1)];
+    v1 = [xp1(1) yp1(1); xp1(2) yp1(2); xp1(3) yp1(3); xp1(4) yp1(4)] ;  
+    text(xp1(1)-xp1(1)/100,yp1(1)-yp1(1)/100,sprintf('%0.3d',matchedCam1)) 
+    patch('Faces',f,'Vertices',v1,'edgeColor',colors(ilist,:),'FaceColor','none','Linewidth',1.5)
 end
+legend('C1','C2')
+title('Matched pairs')
+xlabel('x')
+ylabel('y')
 
 %% cross rays with trajectories found with DARCY02_matchingTracks
 someTrajectories = struct();
@@ -312,14 +331,47 @@ for iselTraj = 1 : size(listMatchedTracks,2)
         end
     end
 end
+%%
+figure, hold on, box on, view(3)
+xlabel('x')
+ylabel('y')
+zlabel('z')
+for iplane = 31%50:70%planeI : planeF
+ for itrck = 1 : length(someTrajectories)
+    clear X Y
+    X = someTrajectories(itrck).x3D;
+    Y = someTrajectories(itrck).y3D;
+    Z = someTrajectories(itrck).z3D;
+    plot3(X,Y,Z,'lineWidth',3)
+ end
+end
+title('All matched tracks // forward')
+
+
+%%
+figure, hold on, box on, view(3)
+xlabel('x')
+ylabel('y')
+zlabel('z')
+for iplane = 31%50:70%planeI : planeF
+ for itrck = 1 : length(allresults(iplane).someTrajectories)
+    clear X Y
+    X = allresults(iplane).someTrajectories(itrck).x3D;
+    Y = allresults(iplane).someTrajectories(itrck).y3D;
+    Z = allresults(iplane).someTrajectories(itrck).z3D;
+    plot3(X,Y,Z,'lineWidth',3)
+ end
+end
+title('All matched tracks')
+
+
 %% show some trajectories
-
-
-Xb = allresults(iplane).trajArray_CAM1(it1).track(:,1);
-Yb = allresults(iplane).trajArray_CAM1(it1).track(:,2);
-
-Xr = allresults(iplane).trajArray_CAM2RAW(it2).track(:,1);
-Yr = allresults(iplane).trajArray_CAM2RAW(it2).track(:,2);
+% 
+ Xb = allresults(iplane).trajArray_CAM1(it1).track(:,1);
+ Yb = allresults(iplane).trajArray_CAM1(it1).track(:,2);
+% 
+ Xr = allresults(iplane).trajArray_CAM2RAW(it2).track(:,1);
+ Yr = allresults(iplane).trajArray_CAM2RAW(it2).track(:,2);
 
 figure;
 sgtitle(sprintf('Trajectory %0.3d',trck))
@@ -343,7 +395,7 @@ plot3(X,Y,Z,'lineWidth',4)
 xlabel('x')
 ylabel('y')
 zlabel('z')
-title('Matched trajs')
+title('Matched trajs after crossing the rays')
 
 
 %%
@@ -623,7 +675,7 @@ function [itraj2,dtraj,listPotTracks,prelist] = DARCY02_matchingTracks(itrajCam0
 % it finds the trajectory in camera 1
 %
 minTintersect = 10; % necessary overlapping time
-distThresh = 10;    % maximum distance between trajectories (pixel)
+distThresh = 5;    % maximum distance between trajectories (pixel)
 dstimestep = 5;     % paremeter to smooth calculation of length of trajectory 
 
 tminCAM01 = min(trajArray_CAM1(itrajCam0).track(:,3));
@@ -652,7 +704,7 @@ end
 prelist = find(dtraj<distThresh);
 
 for iic = 1 : length(prelist) %1 : length(trajArray_CAM2RAW)
-   ic = prelist(iic);
+    ic = prelist(iic);
     tminCAM02 = min(trajArray_CAM2RAW(ic).track(:,3));
     tmaxCAM02 = max(trajArray_CAM2RAW(ic).track(:,3));
     clear A B C
@@ -692,10 +744,12 @@ for iic = 1 : length(prelist) %1 : length(trajArray_CAM2RAW)
     end
 end
 
+minDsRatio = 0.9;%0.5
+maxDsRatio = 1.1; %1.5
 itraj2 = [];
 if ipt > 0
     [~,iitraj2] = min([listPotTracks.distance]);
-    if listPotTracks(iitraj2).dsRatio < 1.5 && listPotTracks(iitraj2).dsRatio > 0.5
+    if listPotTracks(iitraj2).dsRatio < maxDsRatio && listPotTracks(iitraj2).dsRatio > minDsRatio
         itraj2 = listPotTracks(iitraj2).itr;
     else
         itraj2 = [];
@@ -761,13 +815,31 @@ Nplans = numel(calib);
 
 XYZ = zeros(numel(calib),3,numel(x_px));
 
+% for kplan = 1:Nplans
+%     I = inpolygon(x_px,y_px,calib(kplan).pimg(calib(kplan).cHull,1),calib(kplan).pimg(calib(kplan).cHull,2));
+%     if max(I)>0
+%         if Ttype=='T1'
+%             [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T1px2rw),x_px(I==1),y_px(I==1));
+%         elseif Ttype=='T3'
+%             [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T3px2rw),x_px(I==1),y_px(I==1));
+%         end
+%         
+%         XYZ(kplan,1,I==1)=Xtmp;
+%         XYZ(kplan,2,I==1)=Ytmp;
+%         XYZ(kplan,3,I==1)=calib(kplan).posPlane;
+%     end
+%     
+%     XYZ(kplan,1,I==0) = NaN;
+%     XYZ(kplan,2,I==0) = NaN;
+%     XYZ(kplan,3,I==0) = NaN;
+% end
 for kplan = 1:Nplans
     I = inpolygon(x_px,y_px,calib(kplan).pimg(calib(kplan).cHull,1),calib(kplan).pimg(calib(kplan).cHull,2));
     if max(I)>0
         if Ttype=='T1'
-            [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T1px2rw),x_px(I==1),y_px(I==1));
+            [Xtmp,Ytmp]=transformPointsForward((calib(kplan).T1px2rw),x_px(I==1),y_px(I==1));
         elseif Ttype=='T3'
-            [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T3px2rw),x_px(I==1),y_px(I==1));
+            [Xtmp,Ytmp]=transformPointsForward((calib(kplan).T3px2rw),x_px(I==1),y_px(I==1));
         end
         
         XYZ(kplan,1,I==1)=Xtmp;

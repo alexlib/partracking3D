@@ -98,7 +98,7 @@ for iplane = 31%50:70%planeI : planeF
     plot3(X,Y,Z,'lineWidth',4)
  end
 end
-title('All matched tracks')
+title('All matched tracks -- old')
 
 %%
 %"bad" trajectory
@@ -106,35 +106,35 @@ xPoint = 15.47;
 yPoint = -10.16;
 zPoint = 26;
 
-%"good" traj
-xPoint = 3.32;
-yPoint = -1.35;
-zPoint = 18.86;
+% %"good" traj
+% xPoint = 3.32;
+% yPoint = -1.35;
+% zPoint = 18.86;
+% 
+% xPoint = -7.4;
+% yPoint = -17.82;
+% zPoint = 16.;
+% 
+% %these dont look to be the same
+% xPoint = -24.0888;
+% yPoint = 11.8934;
+% zPoint = 21.3539;
+% 
+% %seems to be good
+% xPoint = -5.5315;
+% yPoint = -4.24088;
+% zPoint = 18.3831;
+% 
+% %bad
+% xPoint = -4.82721;
+% yPoint = -5.14635;
+% zPoint = 18.5414;
+% 
+% xPoint = 1.93945;
+% yPoint = 9.45962;
+% zPoint = 23.073;
 
-xPoint = -7.4;
-yPoint = -17.82;
-zPoint = 16.;
-
-%these dont look to be the same
-xPoint = -24.0888;
-yPoint = 11.8934;
-zPoint = 21.3539;
-
-%seems to be good
-xPoint = -5.5315;
-yPoint = -4.24088;
-zPoint = 18.3831;
-
-%bad
-xPoint = -4.82721;
-yPoint = -5.14635;
-zPoint = 18.5414;
-
-xPoint = 1.93945;
-yPoint = 9.45962;
-zPoint = 23.073;
-
-for itrck = 1 : length(allresults(iplane).someTrajectories) 
+for itrck = 31%1 : length(allresults(iplane).someTrajectories) 
    clear X Y Z
    X = allresults(iplane).someTrajectories(itrck).x3D;
    Y = allresults(iplane).someTrajectories(itrck).y3D;
@@ -196,7 +196,7 @@ end
 colorTime = jet(length(CalibFileCam1));
 clear x3D y3D z3D
 
-for ipoints = 2%:length(CalibFileCam1)
+for ipoints = 1:length(CalibFileCam1)
     clear x3D y3D z3D
 for ixy = 1 : length(xy01(ipoints).x)
     x_pxC1 = xy01(ipoints).x(ixy);
