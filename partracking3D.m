@@ -1,7 +1,8 @@
 %% partracking3D
 
 % two problems
-% 1/ points de la mires mal croisés en 3D. (crossrays.m ??)
+% 1/ points de la mires mal croisés en 3D. (crossrays.m ??) - essayer la
+% calibration de 4D-PTV pour voir
 % 2/ tform1 weird with xz
 % 3/ is matching of the trajectories OK?
 
