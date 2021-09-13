@@ -4,8 +4,8 @@ close all
 clear all
 
 %cd('E:\manipIFPEN\expe_2021_06_09_calibration\calibrationImages')
-iFolder = 'E:\manipIFPEN\expe_2021_08_13_calibration_trainingFlor\pics'
 
+iFolder = 'E:\manipIFPEN\expe_2021_08_13_calibration_trainingFlor\pics'
 
 %zPlane = [00:5:35]; % expe_2021_06_09_calibration
 zPlane     = [00 : 04 : 36]; % mm % expe_2021_08_13_calibration
@@ -14,26 +14,27 @@ gridSpace  = 5;        % mm
 targetFace = 'faceB'; % faceA / faceB
 
 cd(iFolder)
-files = dir('*.mcin2');
-fprintf('starting \n')
-for iCam = 1 : length(files)
-    fprintf('iCam: %0.0f, progress: %2.2f\n',iCam,100*iCam/length(files))
-    filename = files(iCam).name;
-    cd(iFolder)
-    [M,~,params]=mCINREAD2(filename,1,1);
-    
-    totalnFrames = params.total_nframes;
-    [M,~,params]=mCINREAD2(filename,1,totalnFrames);
-    
-    k=1;
-    imwrite(M(:,:,k),...
-        sprintf(('CalibrationPlan_%0.2d_cam_%0.1d.tif'),...
-        floor((1+iCam)/2),...
-        ceil((iCam+1)/2)-floor((iCam+1)/2)+1));
-end
+% files = dir('*.mcin2');
+% fprintf('starting \n')
+% for iCam = 1 : length(files)
+%     fprintf('iCam: %0.0f, progress: %2.2f\n',iCam,100*iCam/length(files))
+%     filename = files(iCam).name;
+%     cd(iFolder)
+%     [M,~,params]=mCINREAD2(filename,1,1);
+%     
+%     totalnFrames = params.total_nframes;
+%     [M,~,params]=mCINREAD2(filename,1,totalnFrames);
+%     
+%     k=1;
+%     imwrite(M(:,:,k),...
+%         sprintf(('CalibrationPlan_%0.2d_cam_%0.1d.tif'),...
+%         floor((1+iCam)/2),...
+%         ceil((iCam+1)/2)-floor((iCam+1)/2)+1));
+% end
 
 
 listNames = dir('*.tif');
+
 
 
 
@@ -370,6 +371,8 @@ end
 
 
 
+
+%%
 %%%% build the calib file
 
 savepath = iFolder;
@@ -461,9 +464,5 @@ for kz = 1:numel(zPlane)
 
     end
 end
-
+%%
 save(sprintf('%s/calib.mat',savepath),'calib');
-
-
-
-

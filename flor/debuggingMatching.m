@@ -1,3 +1,6 @@
+close all
+clear all
+
 cd('C:\Users\darcy\Desktop\git\Robust-Estimation')
 load('all_IFPEN_DARCY02_experiments.mat')
 
@@ -64,7 +67,7 @@ filterOrder = 3;
 % first pass
 xm = 00+round(wim/2);
 ym = 00+round(him/2);
-wsub = 300%200;%250 %round(0.25*mean(xm,ym)); % width correlation template image
+wsub = 300;%200;%250 %round(0.25*mean(xm,ym)); % width correlation template image
 
 [xoffSet,yoffSet] = imageCorrelation(xm,ym,ACC1,ACC2,wsub,filterOrder);
 
@@ -243,12 +246,12 @@ for itrajCam0 = 1 : length(trajArray_CAM1)
         listMatchedTracks(ilist).trajcam1 = itrajCam1;
     end
 end
-%
+
 
 %% Will show some matched tracks
 figure, hold on
 colors = jet(length(listMatchedTracks));
-for ilist = 1 : 5 : length(listMatchedTracks)
+for ilist = 1 : length(listMatchedTracks)
     matchedCam0 = listMatchedTracks(ilist).trajcam0;
     matchedCam1 = listMatchedTracks(ilist).trajcam1;
     x0 = trajArray_CAM1(matchedCam0).track(:,1);
@@ -328,6 +331,23 @@ for iselTraj = 1 : size(listMatchedTracks,2)
         end
     end
 end
+%%
+figure, hold on, box on, view(3)
+xlabel('x')
+ylabel('y')
+zlabel('z')
+for iplane = 31%50:70%planeI : planeF
+ for itrck = 1 : length(someTrajectories)
+    clear X Y
+    X = someTrajectories(itrck).x3D;
+    Y = someTrajectories(itrck).y3D;
+    Z = someTrajectories(itrck).z3D;
+    plot3(X,Y,Z,'lineWidth',3)
+ end
+end
+title('All matched tracks // forward')
+
+
 %%
 figure, hold on, box on, view(3)
 xlabel('x')
@@ -724,8 +744,8 @@ for iic = 1 : length(prelist) %1 : length(trajArray_CAM2RAW)
     end
 end
 
-minDsRatio = 0.75;%0.5
-maxDsRatio = 1.25; %1.5
+minDsRatio = 0.9;%0.5
+maxDsRatio = 1.1; %1.5
 itraj2 = [];
 if ipt > 0
     [~,iitraj2] = min([listPotTracks.distance]);
@@ -795,13 +815,31 @@ Nplans = numel(calib);
 
 XYZ = zeros(numel(calib),3,numel(x_px));
 
+% for kplan = 1:Nplans
+%     I = inpolygon(x_px,y_px,calib(kplan).pimg(calib(kplan).cHull,1),calib(kplan).pimg(calib(kplan).cHull,2));
+%     if max(I)>0
+%         if Ttype=='T1'
+%             [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T1px2rw),x_px(I==1),y_px(I==1));
+%         elseif Ttype=='T3'
+%             [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T3px2rw),x_px(I==1),y_px(I==1));
+%         end
+%         
+%         XYZ(kplan,1,I==1)=Xtmp;
+%         XYZ(kplan,2,I==1)=Ytmp;
+%         XYZ(kplan,3,I==1)=calib(kplan).posPlane;
+%     end
+%     
+%     XYZ(kplan,1,I==0) = NaN;
+%     XYZ(kplan,2,I==0) = NaN;
+%     XYZ(kplan,3,I==0) = NaN;
+% end
 for kplan = 1:Nplans
     I = inpolygon(x_px,y_px,calib(kplan).pimg(calib(kplan).cHull,1),calib(kplan).pimg(calib(kplan).cHull,2));
     if max(I)>0
         if Ttype=='T1'
-            [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T1px2rw),x_px(I==1),y_px(I==1));
+            [Xtmp,Ytmp]=transformPointsForward((calib(kplan).T1px2rw),x_px(I==1),y_px(I==1));
         elseif Ttype=='T3'
-            [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T3px2rw),x_px(I==1),y_px(I==1));
+            [Xtmp,Ytmp]=transformPointsForward((calib(kplan).T3px2rw),x_px(I==1),y_px(I==1));
         end
         
         XYZ(kplan,1,I==1)=Xtmp;

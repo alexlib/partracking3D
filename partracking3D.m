@@ -66,7 +66,7 @@ cOUT = clock;
 
 %%
 %% FLOR%% see crossRaysonFire with calibration files
-iexpe=2;
+iexpe=8;
 calib = allExpeStrct(iexpe).calib;
 
 CalibFileCam1 = calib(:,1);
@@ -77,15 +77,14 @@ x01 = struct();
 y01 = struct();
 r3D = struct();
 for i = 1:length(CalibFileCam1)   
-    for ipos3D = 1 : length( CalibFileCam1(i).pos3D  )
+   % for ipos3D = 1 : length( CalibFileCam1(i).pos3D  )
         % finish the work here
-        xy01(i).x = CalibFileCam1(i).pimg(ipos3D,1);
-        xy01(i).y = CalibFileCam1(i).pimg(ipos3D,2);
-        xy02(i).x = CalibFileCam2(i).pimg(ipos3D,1);
-        xy02(i).y = CalibFileCam2(i).pimg(ipos3D,2);
-    end
+        xy01(i).x = CalibFileCam1(i).pimg(:,1);
+        xy01(i).y = CalibFileCam1(i).pimg(:,2);
+        xy02(i).x = CalibFileCam2(i).pimg(:,1);
+        xy02(i).y = CalibFileCam2(i).pimg(:,2);
+   % end
 end
-
 colorTime = jet(length(CalibFileCam1));
 clear r3D D x3D y3D z3D x_pxC1 y_pxC1 x_pxC2 y_pxC2
 figure, hold on, box on
@@ -97,7 +96,7 @@ for ipoints = 1:length(CalibFileCam1)
         x_pxC2 = xy02(ipoints).x(ixy);
         y_pxC2 = xy02(ipoints).y(ixy);
         
-        [crossP,D] = crossRaysonFire(CalibFileCam1,CalibFileCam2,x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype);
+        [crossP,D] = crossRays(CalibFileCam1,CalibFileCam2,x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype);
         if length(crossP)>0
             r3D(ipoints).x(ixy) = crossP(1);
             r3D(ipoints).y(ixy) = crossP(2);
@@ -1278,11 +1277,11 @@ end
 function [crossP,D] = crossRays(CalibFileCam1,CalibFileCam2,x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype)
 D = 'nan';
 
-% [P1,V1]=findRaysDarcy02(CalibFileCam1,x_pxC1,y_pxC1,Ttype);
-% [P2,V2]=findRaysDarcy02(CalibFileCam2,x_pxC2,y_pxC2,Ttype);
+ [P1,V1]=findRaysDarcy02(CalibFileCam1,x_pxC1,y_pxC1,Ttype);
+ [P2,V2]=findRaysDarcy02(CalibFileCam2,x_pxC2,y_pxC2,Ttype);
 
-[P1,V1]=findRaysDarcy02_smallTarget(CalibFileCam1,x_pxC1,y_pxC1,Ttype);
-[P2,V2]=findRaysDarcy02_smallTarget(CalibFileCam2,x_pxC2,y_pxC2,Ttype);
+%[P1,V1]=findRaysDarcy02_smallTarget(CalibFileCam1,x_pxC1,y_pxC1,Ttype);
+%[P2,V2]=findRaysDarcy02_smallTarget(CalibFileCam2,x_pxC2,y_pxC2,Ttype);
 
 if size(P1,1) == 0
     crossP = [];
@@ -1329,13 +1328,31 @@ Nplans = numel(calib);
 
 XYZ = zeros(numel(calib),3,numel(x_px));
 
+% for kplan = 1:Nplans
+%     I = inpolygon(x_px,y_px,calib(kplan).pimg(calib(kplan).cHull,1),calib(kplan).pimg(calib(kplan).cHull,2));
+%     if max(I)>0
+%         if Ttype=='T1'
+%             [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T1px2rw),x_px(I==1),y_px(I==1));
+%         elseif Ttype=='T3'
+%             [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T3px2rw),x_px(I==1),y_px(I==1));
+%         end
+%         
+%         XYZ(kplan,1,I==1)=Xtmp;
+%         XYZ(kplan,2,I==1)=Ytmp;
+%         XYZ(kplan,3,I==1)=calib(kplan).posPlane;
+%     end
+%     
+%     XYZ(kplan,1,I==0) = NaN;
+%     XYZ(kplan,2,I==0) = NaN;
+%     XYZ(kplan,3,I==0) = NaN;
+% end
 for kplan = 1:Nplans
     I = inpolygon(x_px,y_px,calib(kplan).pimg(calib(kplan).cHull,1),calib(kplan).pimg(calib(kplan).cHull,2));
     if max(I)>0
         if Ttype=='T1'
-            [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T1px2rw),x_px(I==1),y_px(I==1));
+            [Xtmp,Ytmp]=transformPointsForward((calib(kplan).T1px2rw),x_px(I==1),y_px(I==1));
         elseif Ttype=='T3'
-            [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T3px2rw),x_px(I==1),y_px(I==1));
+            [Xtmp,Ytmp]=transformPointsForward((calib(kplan).T3px2rw),x_px(I==1),y_px(I==1));
         end
         
         XYZ(kplan,1,I==1)=Xtmp;
@@ -1347,6 +1364,9 @@ for kplan = 1:Nplans
     XYZ(kplan,2,I==0) = NaN;
     XYZ(kplan,3,I==0) = NaN;
 end
+
+
+
 [P, V] = fit3Dline(XYZ);
 
 
