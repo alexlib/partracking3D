@@ -65,16 +65,16 @@ end
 DD = 160;
 
 figure('position',[100 100 800 800])
-imagesc(20*ACC1)
+imagesc(20*ACC1), hold on
 beadstruct = struct();
 % First define the discs in one camera
 iB = 1;
-beadstruct(iB).x = [];
-beadstruct(iB).y = [];
+beadstruct(iB).x_CAM01 = [];
+beadstruct(iB).y_CAM01 = [];
 clear xC yC
 [xC,yC] = ginput(1);
-beadstruct(iB).xC = xC;
-beadstruct(iB).yC = yC;
+beadstruct(iB).xC_CAM01 = xC;
+beadstruct(iB).yC_CAM01 = yC;
 xlim([xC-DD,xC+DD])
 ylim([yC-DD,yC+DD])
 clear xbrdr ybrdr % x and y border
@@ -85,28 +85,32 @@ while(1)
         break
     end
     plot(x,y,'or')
-    beadstruct(iB).x = [beadstruct(iB).x,x];
-    beadstruct(iB).y = [beadstruct(iB).y,y];
+    beadstruct(iB).x_CAM01 = [beadstruct(iB).x_CAM01,x];
+    beadstruct(iB).y_CAM01 = [beadstruct(iB).y_CAM01,y];
 end
 
 %% Second, find corresponding points in the other camera for ray crossing
-xm = beadstruct(iB).x(1);
-ym = beadstruct(iB).y(1);
-[xoffSet,yoffSet] = imageCorrelation(xm,ym,ACC1,ACC2,...
-                round(wti/2),filterOrder,'cleanC',dxPass01,dyPass01,150);
+for ip = 1 : length(beadstruct(iB).x_CAM01)
+[beadstruct(iB).x_CAM02(ip),beadstruct(iB).y_CAM02(ip)] = ...
+        imageCorrelation(beadstruct(iB).x_CAM01(ip),beadstruct(iB).y_CAM01(ip),...
+        ACC1,ACC2,...
+        round(wti/2),filterOrder,'cleanC',dxPass01,dyPass01,150);
+end
+%% THIRD
 
+%%
 hcam01 = figure;
 sgtitle('Raw images')
 subplot(1,2,1)
 imagesc(20*ACC1)%, colormap gray
 title('CAM1')
 hold on
-plot(xm,ym,'gs')
+plot([beadstruct(iB).x_CAM01],[beadstruct(iB).y_CAM01],'-gs')
 subplot(1,2,2)
 imagesc(20*ACC2)%, colormap gray
 title('CAM2')
 hold on
-plot(xoffSet,yoffSet,'gs')
+plot([beadstruct(iB).x_CAM02],[beadstruct(iB).y_CAM02],'-gs')
 %%
 hcam01 = figure;
 sgtitle('Raw images')
