@@ -77,7 +77,7 @@ Ttype= 'T1';
 x01 = struct();
 y01 = struct();
 r3D = struct();
-for i = 2:length(CalibFileCam1)   
+for i = 1:length(CalibFileCam1)   
    % for ipos3D = 1 : length( CalibFileCam1(i).pos3D  )
         % finish the work here
         xy01(i).x = CalibFileCam1(i).pimg(:,1);

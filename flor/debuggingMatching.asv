@@ -283,14 +283,11 @@ someTrajectories = struct();
 Ttype = 'T1';%T1
 
 
-calib = allExpeStrct(iexpe).calib;
-
-% CalibFileCam1 = calib(2:end,1);
-% CalibFileCam2 = calib(2:end,2);
+calib = allExpeStrct(iexpe).calib(2:end);
 
 CalibFileCam1 = calib(:,1);
 CalibFileCam2 = calib(:,2);
-
+%%
 for iselTraj = 1 : size(listMatchedTracks,2)
     itraj1 = listMatchedTracks(iselTraj).trajcam0;
     itraj2 = listMatchedTracks(iselTraj).trajcam1;
@@ -348,8 +345,7 @@ for iplane = 31%50:70%planeI : planeF
     plot3(X,Y,Z,'lineWidth',3)
  end
 end
-axis equal
-title('All matched tracks')
+title('All matched tracks // forward')
 
 
 %%

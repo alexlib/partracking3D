@@ -71,6 +71,7 @@ save(nameMat,'allTraj','-v7.3')
 
 %% FLOR
 %modified lines 145-185
+%created new variable CCRAW_loc (localized)
 %in which we only see a selected area (see in figs)
 %we can choose a better criteria
 
@@ -118,6 +119,7 @@ th = allExpeStrct(iexpe).centerFinding_th;
 sz = allExpeStrct(iexpe).centerFinding_sz;
 Nwidth = 1.;
 CCRAW = struct();
+CCRAW_loc = struct();
 
 switch dofigures
     case 'yes'
@@ -136,16 +138,26 @@ for it = 1 : size(M,3)
     Im(:,:) = Im01(:,:,it);
     
     CCRAW(it).xyRAW = pkfnd(Im01(:,:,it),th,sz);
-    CCRAW(it).xy(:,1) = CCRAW(it).xyRAW(:,1);
-    CCRAW(it).xy(:,2) = CCRAW(it).xyRAW(:,2);
+    
+    minx = centerX-1*std(CCRAW(it).xyRAW(:,1));
+    miny = centerY-1*std(CCRAW(it).xyRAW(:,2));
+    maxx = centerX+1*std(CCRAW(it).xyRAW(:,1));
+    maxy = centerY+1*std(CCRAW(it).xyRAW(:,2));
+    
+    condXmin = CCRAW(it).xyRAW(:,1)>minx;
+    condXmax = CCRAW(it).xyRAW(:,1)<maxx;
+    condYmin = CCRAW(it).xyRAW(:,2)>miny;
+    condYmax = CCRAW(it).xyRAW(:,2)<maxy;
+    CCRAW_loc(it).xy(:,1) = CCRAW(it).xyRAW(condXmin&condXmax&condYmin&condYmax,1);
+    CCRAW_loc(it).xy(:,2) = CCRAW(it).xyRAW(condXmin&condXmax&condYmin&condYmax,2);
 
     
     %refine at subpixel precision
-    for ixy = 1 : size(CCRAW(it).xy,1)
+    for ixy = 1 : size(CCRAW_loc(it).xy,1)
         clear xpkfnd ypkfnd Ip
         Ip = zeros(2*Nwidth+1,2*Nwidth+1,'double');
-        xpkfnd = CCRAW(it).xy(ixy,1);
-        ypkfnd = CCRAW(it).xy(ixy,2);
+        xpkfnd = CCRAW_loc(it).xy(ixy,1);
+        ypkfnd = CCRAW_loc(it).xy(ixy,2);
         Ip = double(Im(ypkfnd-Nwidth:ypkfnd+Nwidth,xpkfnd-Nwidth:xpkfnd+Nwidth));
         % replace all 0 Ip values by a tiny value
         list0 = find(Ip==0);
@@ -159,7 +171,7 @@ for it = 1 : size(M,3)
 
     switch dofigures
         case 'yes'
-    if size(CCRAW(it).xy,1) >0
+    if size(CCRAW_loc(it).xy,1) >0
         CCwrk = CC(it).xy;
         figure(hmax), title(sprintf('time: %4.0f - nparts: %4.0f',it,length(CCwrk)))
         hold on
@@ -179,7 +191,7 @@ end
 if exist('CC')
     for it = 1 : size(CC,2)
         
-        if size(CCRAW(it).xy,1) >0
+        if size(CCRAW_loc(it).xy,1) >0
             clear ikill CCX CCY
             ikill = [];
             for ip = 1 : size(CC(it).xy,1)

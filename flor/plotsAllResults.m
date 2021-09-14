@@ -98,7 +98,8 @@ for iplane = 31%50:70%planeI : planeF
     plot3(X,Y,Z,'lineWidth',4)
  end
 end
-title('All matched tracks -- old')
+axis equal
+title('All matched tracks')
 
 %%
 %"bad" trajectory
