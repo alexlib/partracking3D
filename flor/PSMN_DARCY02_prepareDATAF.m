@@ -5,7 +5,7 @@ load('all_IFPEN_DARCY02_experiments.mat')
 
 % ho to load calib file in the structure
 % allExpeStrct(7).calib = load('D:\IFPEN\analysisExperiments\calibFiles\calib_2021_08_13\calib.mat');
-iexpe = 9; 
+iexpe = 8; 
 
 %% find Centers 
 allresults = struct();
@@ -33,7 +33,7 @@ for iplane = planeI : planeF
         fprintf('working on sequence: %4.0f \n',iSeq)
         clear trajArray_loc tracks_loc CCout
         [CCall,CCout,ImMean,ImMax,filename] = ...,
-            DARCY02_findCC(allExpeStrct,iexpe,iSeq,maxdist,longmin,'figures','yes');
+            DARCY02_findCC(allExpeStrct,iexpe,iSeq,maxdist,longmin,'figures','no');
         %allTraj(iSeq).trajArray = trajArray_loc;
         %allTraj(iSeq).tracks    = tracks_loc;
         allTraj(iSeq).CCall    = CCall;
