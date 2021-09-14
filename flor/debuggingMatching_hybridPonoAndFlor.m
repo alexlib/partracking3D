@@ -1,7 +1,12 @@
 close all
 clear all
 
-cd('C:\Users\darcy\Desktop\git\Robust-Estimation')
+% adapt folder names for pono computer
+if strcmp(getenv('COMPUTERNAME'),'DESKTOP-3ONLTD9')
+    cd('C:\Users\Lenovo\Jottacloud\RECHERCHE\Projets\21_IFPEN\git\partracking3D')
+else
+    cd('C:\Users\darcy\Desktop\git\Robust-Estimation')
+end
 load('all_IFPEN_DARCY02_experiments.mat')
 
 iexpe = 8;
@@ -10,13 +15,23 @@ folderExperiment  = folderScriptshell;
 nameAllTraj = 'alltraj_2021_08_15_electroVavle_at_40percent.mat';
 iplane = 31;
 
+
+% adapt folder names for pono computer
+if strcmp(getenv('COMPUTERNAME'),'DESKTOP-3ONLTD9')
+    if iexpe == 8
+        allExpeStrct(iexpe).inputFolder = 'C:\Users\Lenovo\Jottacloud\RECHERCHE\Projets\21_IFPEN\manips\expe_2021_08_15_40percent';
+        allExpeStrct(iexpe).analysisFolder = 'C:\Users\Lenovo\Jottacloud\RECHERCHE\Projets\21_IFPEN\analysis\analysis_2021_08_15';
+        folderScriptshell = allExpeStrct(iexpe).analysisFolder;
+    end
+end
+
 allresults = struct();
 %%
 % load centers
 cd(folderExperiment)
 allTrajLOAD = load(nameAllTraj);
 allTraj = allTrajLOAD.allTraj;
-%%
+%% show all trajectories 
 iSeqa = iplane*2-1;
 iSeqb = iplane*2;
 
