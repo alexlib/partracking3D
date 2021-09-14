@@ -59,6 +59,40 @@ for it = 1 : totalnFrames
     end
 end
 
+%% find the beads in the two cameras, with ginput and image correlation
+% First define the discs in one camera
+% Second, find corresponding points in the other camera for ray crossing
+DD = 160;
+
+figure('position',[100 100 800 800])
+imagesc(20*ACC1)
+beadstruct = struct();
+% First define the discs in one camera
+iB = 1;
+beadstruct(iB).x = [];
+beadstruct(iB).y = [];
+clear xC yC
+[xC,yC] = ginput(1);
+beadstruct(iB).xC = xC;
+beadstruct(iB).yC = yC;
+xlim([xC-DD,xC+DD])
+ylim([yC-DD,yC+DD])
+clear xbrdr ybrdr % x and y border
+while(1)
+    clear x y
+    [x,y] = ginput(1);
+    if x < xC-DD
+        break
+    end
+    plot(x,y,'or')
+    beadstruct(iB).x = [beadstruct(iB).x,x];
+    beadstruct(iB).y = [beadstruct(iB).y,y];
+end
+
+%% Second, find corresponding points in the other camera for ray crossing
+
+
+%%
 hcam01 = figure;
 sgtitle('Raw images')
 subplot(1,2,1)
@@ -330,7 +364,9 @@ for iselTraj = 1 : size(listMatchedTracks,2)
             x_pxC2 = x02(ixy);
             y_pxC2 = y02(ixy);
 
-            [crossP,D] = crossRays(CalibFileCam1,CalibFileCam2,x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype);
+            %[crossP,D] = crossRays(CalibFileCam1,CalibFileCam2,x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype);
+            cd('C:\Users\Lenovo\Jottacloud\RECHERCHE\Projets\21_IFPEN\git\partracking3D')
+            [crossP,D,XYZ1,XYZ2] = rayCross_function(x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype,calib);
             if length(crossP)>0
                 someTrajectories(iselTraj).x3D(ixy) = crossP(1);
                 someTrajectories(iselTraj).y3D(ixy) = crossP(2);
