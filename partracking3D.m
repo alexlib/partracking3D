@@ -70,8 +70,8 @@ cOUT = clock;
 iexpe=8;
 calib = allExpeStrct(iexpe).calib;
 
-CalibFileCam1 = calib(:,1);
-CalibFileCam2 = calib(:,2);
+CalibFileCam1 = calib(2:end,1);
+CalibFileCam2 = calib(2:end,2);
 Ttype= 'T1';
 
 x01 = struct();
@@ -89,7 +89,7 @@ end
 colorTime = jet(length(CalibFileCam1));
 clear r3D D x3D y3D z3D x_pxC1 y_pxC1 x_pxC2 y_pxC2
 figure, hold on, box on
-for ipoints = 1:length(CalibFileCam1)
+for ipoints = 4%1:5:length(CalibFileCam1)
     clear x3D y3D z3D
     for ixy = 1 : length(xy01(ipoints).x)
         x_pxC1 = xy01(ipoints).x(ixy);
@@ -1329,31 +1329,13 @@ Nplans = numel(calib);
 
 XYZ = zeros(numel(calib),3,numel(x_px));
 
-% for kplan = 1:Nplans
-%     I = inpolygon(x_px,y_px,calib(kplan).pimg(calib(kplan).cHull,1),calib(kplan).pimg(calib(kplan).cHull,2));
-%     if max(I)>0
-%         if Ttype=='T1'
-%             [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T1px2rw),x_px(I==1),y_px(I==1));
-%         elseif Ttype=='T3'
-%             [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T3px2rw),x_px(I==1),y_px(I==1));
-%         end
-%         
-%         XYZ(kplan,1,I==1)=Xtmp;
-%         XYZ(kplan,2,I==1)=Ytmp;
-%         XYZ(kplan,3,I==1)=calib(kplan).posPlane;
-%     end
-%     
-%     XYZ(kplan,1,I==0) = NaN;
-%     XYZ(kplan,2,I==0) = NaN;
-%     XYZ(kplan,3,I==0) = NaN;
-% end
 for kplan = 1:Nplans
     I = inpolygon(x_px,y_px,calib(kplan).pimg(calib(kplan).cHull,1),calib(kplan).pimg(calib(kplan).cHull,2));
     if max(I)>0
         if Ttype=='T1'
-            [Xtmp,Ytmp]=transformPointsForward((calib(kplan).T1px2rw),x_px(I==1),y_px(I==1));
+            [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T1px2rw),x_px(I==1),y_px(I==1));
         elseif Ttype=='T3'
-            [Xtmp,Ytmp]=transformPointsForward((calib(kplan).T3px2rw),x_px(I==1),y_px(I==1));
+            [Xtmp,Ytmp]=transformPointsInverse((calib(kplan).T3px2rw),x_px(I==1),y_px(I==1));
         end
         
         XYZ(kplan,1,I==1)=Xtmp;
@@ -1365,6 +1347,24 @@ for kplan = 1:Nplans
     XYZ(kplan,2,I==0) = NaN;
     XYZ(kplan,3,I==0) = NaN;
 end
+% for kplan = 1:Nplans
+%     I = inpolygon(x_px,y_px,calib(kplan).pimg(calib(kplan).cHull,1),calib(kplan).pimg(calib(kplan).cHull,2));
+%     if max(I)>0
+%         if Ttype=='T1'
+%             [Xtmp,Ytmp]=transformPointsForward((calib(kplan).T1px2rw),x_px(I==1),y_px(I==1));
+%         elseif Ttype=='T3'
+%             [Xtmp,Ytmp]=transformPointsForward((calib(kplan).T3px2rw),x_px(I==1),y_px(I==1));
+%         end
+%         
+%         XYZ(kplan,1,I==1)=Xtmp;
+%         XYZ(kplan,2,I==1)=Ytmp;
+%         XYZ(kplan,3,I==1)=calib(kplan).posPlane;
+%     end
+%     
+%     XYZ(kplan,1,I==0) = NaN;
+%     XYZ(kplan,2,I==0) = NaN;
+%     XYZ(kplan,3,I==0) = NaN;
+% end
 
 
 

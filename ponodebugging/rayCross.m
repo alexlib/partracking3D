@@ -4,9 +4,9 @@ toto = allExpeStrct(iexpe).calib(:,1)
 
 
 %%
-calib = allExpeStrct(iexpe).calib;
-CalibFileCam1 = calib(:,1);
-CalibFileCam2 = calib(:,2);
+% calib = allExpeStrct(iexpe).calib;
+% CalibFileCam1 = calib(:,1);
+% CalibFileCam2 = calib(:,2);
 
 x_pxC1          = 1261.5;
 y_pxC1          =  717.77;
