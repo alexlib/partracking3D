@@ -77,7 +77,7 @@ Ttype= 'T1';
 x01 = struct();
 y01 = struct();
 r3D = struct();
-for i = 1:length(CalibFileCam1)   
+for i = 2:length(CalibFileCam1)   
    % for ipos3D = 1 : length( CalibFileCam1(i).pos3D  )
         % finish the work here
         xy01(i).x = CalibFileCam1(i).pimg(:,1);
@@ -89,7 +89,7 @@ end
 colorTime = jet(length(CalibFileCam1));
 clear r3D D x3D y3D z3D x_pxC1 y_pxC1 x_pxC2 y_pxC2
 figure, hold on, box on
-for ipoints = 4%1:5:length(CalibFileCam1)
+for ipoints = 2:length(CalibFileCam1)
     clear x3D y3D z3D
     for ixy = 1 : length(xy01(ipoints).x)
         x_pxC1 = xy01(ipoints).x(ixy);

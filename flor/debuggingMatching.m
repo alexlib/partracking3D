@@ -348,6 +348,7 @@ for iplane = 31%50:70%planeI : planeF
     plot3(X,Y,Z,'lineWidth',3)
  end
 end
+axis equal
 title('All matched tracks')
 
 
