@@ -248,7 +248,7 @@ for itrajCam0 = 1 : length(trajArray_CAM1)
 end
 
 
-%% Will show some matched tracks
+%%  matched tracks
 figure, hold on
 colors = jet(length(listMatchedTracks));
 for ilist = 1 : length(listMatchedTracks)
@@ -284,6 +284,9 @@ Ttype = 'T1';%T1
 
 
 calib = allExpeStrct(iexpe).calib;
+
+% CalibFileCam1 = calib(2:end,1);
+% CalibFileCam2 = calib(2:end,2);
 
 CalibFileCam1 = calib(:,1);
 CalibFileCam2 = calib(:,2);
@@ -345,7 +348,7 @@ for iplane = 31%50:70%planeI : planeF
     plot3(X,Y,Z,'lineWidth',3)
  end
 end
-title('All matched tracks // forward')
+title('All matched tracks')
 
 
 %%
