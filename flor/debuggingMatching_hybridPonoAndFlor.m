@@ -22,6 +22,7 @@ if strcmp(getenv('COMPUTERNAME'),'DESKTOP-3ONLTD9')
         allExpeStrct(iexpe).inputFolder = 'C:\Users\Lenovo\Jottacloud\RECHERCHE\Projets\21_IFPEN\manips\expe_2021_08_15_40percent';
         allExpeStrct(iexpe).analysisFolder = 'C:\Users\Lenovo\Jottacloud\RECHERCHE\Projets\21_IFPEN\analysis\analysis_2021_08_15';
         folderScriptshell = allExpeStrct(iexpe).analysisFolder;
+        folderExperiment  = folderScriptshell;
     end
 end
 

@@ -1,6 +1,4 @@
 
-toto = allExpeStrct(iexpe).calib(:,1)
-
 
 
 %%
