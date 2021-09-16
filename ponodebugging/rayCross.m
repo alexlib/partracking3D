@@ -58,7 +58,10 @@ plot3(XYZ2(:,1),XYZ2(:,2),XYZ2(:,3),'-or')
 plot3(crossP(1),crossP(2),crossP(3),'sk')
 plot3(0,5,12,'ok')
 view(3)
-
+title('Rays crossing','Interpreter','latex')
+xlabel('x','Interpreter','latex','FontSize',20)
+ylabel('y','Interpreter','latex','FontSize',20)
+zlabel('z','Interpreter','latex','FontSize',20)
 legend('camera 1','camera 2','point found','point to find')
 %%
 

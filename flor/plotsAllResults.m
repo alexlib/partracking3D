@@ -1,3 +1,7 @@
+set(groot, 'defaultAxesTickLabelInterpreter','latex'); 
+set(groot, 'defaultLegendInterpreter','latex');
+
+%%
 cd('C:\Users\darcy\Desktop\git\Robust-Estimation')
 load('all_IFPEN_DARCY02_experiments.mat')
 
@@ -6,8 +10,7 @@ folderScriptshell = allExpeStrct(iexpe).analysisFolder;
 folderExperiment  = folderScriptshell;
 nameAllTraj = 'alltraj_2021_08_15_electroVavle_at_40percent.mat';
 
-cd(folderExperiment+'\old')
-cd(strcat(folderExperiment,'old'))
+cd(folderExperiment)
 nameResults = 'allResults_auFilDeLEau.mat';
 load(nameResults)
 
@@ -89,7 +92,7 @@ figure, hold on, box on, view(3)
 xlabel('x')
 ylabel('y')
 zlabel('z')
-for iplane = 31%50:70%planeI : planeF
+for iplane = 2:60%:34%50:70%planeI : planeF
  for itrck = 1 : length(allresults(iplane).someTrajectories)
     clear X Y
     X = allresults(iplane).someTrajectories(itrck).x3D;
@@ -102,38 +105,10 @@ axis equal
 title('All matched tracks')
 
 %%
-%"bad" trajectory
+%we choose the points for the trajectory we want to see in each camera
 xPoint = 15.47;
 yPoint = -10.16;
 zPoint = 26;
-
-% %"good" traj
-% xPoint = 3.32;
-% yPoint = -1.35;
-% zPoint = 18.86;
-% 
-% xPoint = -7.4;
-% yPoint = -17.82;
-% zPoint = 16.;
-% 
-% %these dont look to be the same
-% xPoint = -24.0888;
-% yPoint = 11.8934;
-% zPoint = 21.3539;
-% 
-% %seems to be good
-% xPoint = -5.5315;
-% yPoint = -4.24088;
-% zPoint = 18.3831;
-% 
-% %bad
-% xPoint = -4.82721;
-% yPoint = -5.14635;
-% zPoint = 18.5414;
-% 
-% xPoint = 1.93945;
-% yPoint = 9.45962;
-% zPoint = 23.073;
 
 for itrck = 31%1 : length(allresults(iplane).someTrajectories) 
    clear X Y Z
@@ -243,3 +218,37 @@ iplane = 31;
         plot3(X,Y,Z,'lineWidth',4)
     end
  end
+ 
+ %% plot histogram positions
+ 
+colors = jet(length(allresults));
+figure;hold on
+for iplane = 2:length(allresults)
+    h=histogram(allresults(iplane).hist3D,'FaceColor',colors(iplane,:));
+end
+xlabel('z [mm]', 'Interpreter','latex','FontSize',20)
+ylabel('Distribution', 'Interpreter','latex','FontSize',20)
+ax=gca;
+ax.FontSize = 18;
+grid on 
+
+figure;hold on
+for iplane = 2:length(allresults)
+    h=histogram(allresults(iplane).histx,'FaceColor',colors(iplane,:));
+end
+xlabel('x [mm]', 'Interpreter','latex','FontSize',20)
+ylabel('Distribution', 'Interpreter','latex','FontSize',20)
+ax=gca;
+ax.FontSize = 18;
+grid on 
+
+figure;hold on
+for iplane = 2:length(allresults)
+    h=histogram(allresults(iplane).histy,'FaceColor',colors(iplane,:));
+end
+xlabel('y [mm]', 'Interpreter','latex','FontSize',20)
+ylabel('Distribution', 'Interpreter','latex','FontSize',20)
+ax=gca;
+ax.FontSize = 18;
+grid on 
+

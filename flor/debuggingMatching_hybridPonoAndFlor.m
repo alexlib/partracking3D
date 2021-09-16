@@ -89,6 +89,7 @@ while(1)
     beadstruct(iB).y_CAM01 = [beadstruct(iB).y_CAM01,y];
 end
 
+
 %% Second, find corresponding points in the other camera for ray crossing
 for ip = 1 : length(beadstruct(iB).x_CAM01)
 [beadstruct(iB).x_CAM02(ip),beadstruct(iB).y_CAM02(ip)] = ...
@@ -113,13 +114,24 @@ hold on
 plot([beadstruct(iB).x_CAM02],[beadstruct(iB).y_CAM02],'-gs')
 %%
 hcam01 = figure;
-sgtitle('Raw images')
-subplot(1,2,1)
+tiledlayout(1,2);
+sgtitle('Raw images', 'Interpreter','latex','FontSize', 22)
+nexttile
+%subplot(1,2,1)
 imagesc(20*ACC1)%, colormap gray
-title('CAM1')
-subplot(1,2,2)
+xlabel('x','Interpreter','latex','FontSize', 20)
+ylabel('y','Interpreter','latex','FontSize', 20)
+title('CAM1','Interpreter','latex')
+set(gca,'TickLabelInterpreter','latex','FontSize',20)
+nexttile
+%subplot(1,2,2)
 imagesc(20*ACC2)%, colormap gray
-title('CAM2')
+xlabel('x','Interpreter','latex','FontSize', 20)
+ylabel('y','Interpreter','latex','FontSize', 20)
+set(gca,'TickLabelInterpreter','latex','FontSize',20)
+title('CAM2','Interpreter','latex')
+set(1, 'units', 'centimeters', 'pos', [0 0 40 10])
+
 %%
 filterOrder = 3;
 figure;
@@ -229,6 +241,9 @@ tform1 = fitgeotrans(movingPoints,fixedPoints,transformationType);
 ACC2T = imwarp(ACC2,tform1, 'OutputView', imref2d( size(ACC1) ));
 falseColorOverlay = imfuse( 40*ACC1, 40*ACC2T);
 imshow( falseColorOverlay, 'initialMagnification', 'fit');
+xlabel('x','Interpreter','latex','FontSize',20)
+ylabel('y','Interpreter','latex','FontSize',20)
+title('CAM1 and CAM2(CAM1)','Interpreter','latex')
 %%
 ratio = ACC1./ACC2T;
 figure;
@@ -337,13 +352,15 @@ for ilist = 1 : length(listMatchedTracks)
     xp1 = [min(x1),min(x1),max(x1),max(x1)];
     yp1 = [min(y1),max(y1),max(y1),min(y1)];
     v1 = [xp1(1) yp1(1); xp1(2) yp1(2); xp1(3) yp1(3); xp1(4) yp1(4)] ;  
-    text(xp1(1)-xp1(1)/100,yp1(1)-yp1(1)/100,sprintf('%0.3d',matchedCam1)) 
+    text(xp1(1)-xp1(1)/1000,yp1(1)-yp1(1)/1000,sprintf('%0.3d',matchedCam1)) 
     patch('Faces',f,'Vertices',v1,'edgeColor',colors(ilist,:),'FaceColor','none','Linewidth',1.5)
 end
 legend('C1','C2')
-title('Matched pairs')
-xlabel('x')
-ylabel('y')
+title('Matched pairs','Interpreter','latex','FontSize',22)
+xlabel('x','Interpreter','latex','FontSize',20)
+ylabel('y','Interpreter','latex','FontSize',20)
+ax=gca;
+ax.FontSize = 20;
 %% cross rays with trajectories found with DARCY02_matchingTracks
 someTrajectories = struct();
 Ttype = 'T1';%T1
@@ -383,8 +400,8 @@ for iselTraj = 1 : size(listMatchedTracks,2)
             x_pxC2 = x02(ixy);
             y_pxC2 = y02(ixy);
 
-            %[crossP,D] = crossRays(CalibFileCam1,CalibFileCam2,x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype);
-            cd('C:\Users\Lenovo\Jottacloud\RECHERCHE\Projets\21_IFPEN\git\partracking3D')
+            [crossP,D] = crossRays(CalibFileCam1,CalibFileCam2,x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype);
+            %cd('C:\Users\darcy\Desktop\git\partracking3D\')
             [crossP,D,XYZ1,XYZ2] = rayCross_function(x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype,calib);
             if length(crossP)>0
                 someTrajectories(iselTraj).x3D(ixy) = crossP(1);
@@ -400,9 +417,6 @@ for iselTraj = 1 : size(listMatchedTracks,2)
 end
 %%
 figure, hold on, box on, view(3)
-xlabel('x')
-ylabel('y')
-zlabel('z')
 for iplane = 31%50:70%planeI : planeF
  for itrck = 1 : length(someTrajectories)
     clear X Y
@@ -412,7 +426,12 @@ for iplane = 31%50:70%planeI : planeF
     plot3(X,Y,Z,'lineWidth',3)
  end
 end
-title('All matched tracks')
+title('Trajectories','Interpreter','latex','FontSize',22)
+xlabel('x','Interpreter','latex','FontSize',20)
+ylabel('y','Interpreter','latex','FontSize',20)
+zlabel('z','Interpreter','latex','FontSize',20)
+ax=gca;
+ax.FontSize = 20;axis equal
 %%
 figure, hold on, box on, view(3)
 xlabel('x')
@@ -427,7 +446,7 @@ for iplane = 31%50:70%planeI : planeF
     plot3(X,Y,Z,'lineWidth',3)
  end
 end
-title('All matched tracks')
+
 
 
 %% show some trajectories

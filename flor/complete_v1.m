@@ -13,8 +13,8 @@ iexpe = 8;
 folderScriptshell = allExpeStrct(iexpe).analysisFolder;
 folderExperiment  = folderScriptshell;
 nameAllTraj = 'alltraj_2021_08_15_electroVavle_at_40percent.mat';
-planeI = 1;
-planeF = 60;
+planeI = 31;
+planeF = 34;
 
 % adapt folder names for pono computer
 if strcmp(getenv('COMPUTERNAME'),'DESKTOP-3ONLTD9')
@@ -293,7 +293,7 @@ ci = clock;
                 x_pxC2 = x02(ixy);
                 y_pxC2 = y02(ixy);
                 
-                [crossP,D] = crossRaysonFire(CalibFileCam1,CalibFileCam2,x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype);
+                [crossP,D] = crossRays(CalibFileCam1,CalibFileCam2,x_pxC1,y_pxC1,x_pxC2,y_pxC2,Ttype);
                 if length(crossP)>0
                     someTrajectories(iselTraj).x3D(ixy) = crossP(1);
                     someTrajectories(iselTraj).y3D(ixy) = crossP(2);
@@ -339,7 +339,7 @@ ci = clock;
     allresults(iplane).tform1 = tform1;
     
     cd(folderExperiment)
-    save('allResults_auFilDeLEau_filterorder.mat','allresults')
+    save('allResults_auFilDeLEau.mat','allresults')
     
     cf = clock;
     fprintf('\t \t \t it took %4.0f s \n',etime(cf,ci))
